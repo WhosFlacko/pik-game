@@ -4,10 +4,10 @@
 const CONFIG = {
   UPDATE_INTERVAL: 1000, // 1 second - REAL-TIME updates
   COINS: [
-    { id: 'bitcoin', symbol: 'BTC', name: 'Bitcoin', color: '#F7931A' },
-    { id: 'ethereum', symbol: 'ETH', name: 'Ethereum', color: '#627EEA' },
-    { id: 'solana', symbol: 'SOL', name: 'Solana', color: '#14F195' },
-    { id: 'dogecoin', symbol: 'DOGE', name: 'Dogecoin', color: '#C2A633' }
+    { id: 'bitcoin', symbol: 'BTC', name: 'Bitcoin', color: '#F7931A', pepe: '🐸', filter: 'hue-rotate(30deg) saturate(2)' },
+    { id: 'ethereum', symbol: 'ETH', name: 'Ethereum', color: '#627EEA', pepe: '🐸', filter: 'hue-rotate(200deg) saturate(2)' },
+    { id: 'solana', symbol: 'SOL', name: 'Solana', color: '#14F195', pepe: '🐸', filter: 'hue-rotate(150deg) saturate(3)' },
+    { id: 'dogecoin', symbol: 'DOGE', name: 'Dogecoin', color: '#C2A633', pepe: '🐸', filter: 'hue-rotate(45deg) saturate(1.5)' }
   ],
   BUY_INS: {
     1: 0.05,
@@ -173,6 +173,7 @@ function renderCoinGrid() {
     card.className = 'coin-card';
     card.dataset.coinId = coin.id;
     card.innerHTML = `
+      <div class="coin-pepe" style="filter: ${coin.filter}">🐸</div>
       <div class="coin-symbol" style="color: ${coin.color}">${coin.symbol}</div>
       <div class="coin-name">${coin.name}</div>
     `;
@@ -335,31 +336,30 @@ if (!document.getElementById('confetti-style')) {
   document.head.appendChild(style);
 }
 
-// Race Display (Live horizontal bars)
+// Race Display (PEPE BATTLE ARENA)
 function renderRaceDisplay() {
   const container = document.getElementById('race-display');
-  container.innerHTML = '';
+  container.innerHTML = '<div class="battle-arena"></div>';
+  const arena = container.querySelector('.battle-arena');
   
   CONFIG.COINS.forEach(coin => {
-    const row = document.createElement('div');
-    row.className = 'race-row';
-    row.dataset.coinId = coin.id;
+    const pepeContainer = document.createElement('div');
+    pepeContainer.className = 'pepe-fighter';
+    pepeContainer.dataset.coinId = coin.id;
     
     const isSelected = coin.id === gameState.selectedCoin.id;
-    if (isSelected) row.classList.add('selected-coin');
+    if (isSelected) pepeContainer.classList.add('your-pepe');
     
-    row.innerHTML = `
-      <div class="race-coin-info">
-        <span class="race-rank">-</span>
-        <span class="race-symbol" style="color: ${coin.color}">${coin.symbol}</span>
+    pepeContainer.innerHTML = `
+      <div class="pepe-character" style="filter: ${coin.filter}">🐸</div>
+      <div class="pepe-info">
+        <div class="pepe-rank">-</div>
+        <div class="pepe-name" style="color: ${coin.color}">${coin.symbol}</div>
+        <div class="pepe-change">0.00%</div>
       </div>
-      <div class="race-bar-container">
-        <div class="race-bar" style="background: ${coin.color}"></div>
-      </div>
-      <div class="race-change">0.00%</div>
     `;
     
-    container.appendChild(row);
+    arena.appendChild(pepeContainer);
   });
 }
 
@@ -391,25 +391,43 @@ async function updatePrices() {
     }
     gameState.lastRank = userRank;
     
-    // Update race display
+    // Update Pepe Battle Display
     changes.forEach((item, index) => {
-      const row = document.querySelector(`.race-row[data-coin-id="${item.coin.id}"]`);
-      if (!row) return;
+      const pepe = document.querySelector(`.pepe-fighter[data-coin-id="${item.coin.id}"]`);
+      if (!pepe) return;
       
       const rank = index + 1;
-      const rankEmoji = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : rank;
+      const rankEmoji = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : '💀';
       
-      row.querySelector('.race-rank').textContent = rankEmoji;
-      row.querySelector('.race-change').textContent = `${item.change >= 0 ? '+' : ''}${item.change.toFixed(2)}%`;
-      row.querySelector('.race-change').style.color = item.change >= 0 ? '#14F195' : '#ff4444';
+      // Update info
+      pepe.querySelector('.pepe-rank').textContent = rankEmoji;
+      pepe.querySelector('.pepe-change').textContent = `${item.change >= 0 ? '+' : ''}${item.change.toFixed(3)}%`;
+      pepe.querySelector('.pepe-change').style.color = item.change >= 0 ? '#14F195' : '#ff4444';
       
-      // Animate bar width (scaled to max change)
-      const maxChange = Math.max(...changes.map(c => Math.abs(c.change)));
-      const barWidth = maxChange > 0 ? (Math.abs(item.change) / maxChange) * 100 : 0;
-      row.querySelector('.race-bar').style.width = `${barWidth}%`;
+      // Scale Pepe based on performance (1.0 to 3.0)
+      const maxChange = Math.max(...changes.map(c => Math.abs(c.change)), 0.01);
+      const scale = 1.0 + (Math.abs(item.change) / maxChange) * 2.0; // 1x to 3x size
+      const character = pepe.querySelector('.pepe-character');
+      character.style.transform = `scale(${scale})`;
       
-      // Reorder rows by rank
-      row.style.order = rank;
+      // Winner gets MASSIVE
+      if (rank === 1 && item.change > 0) {
+        character.classList.add('winning');
+        pepe.classList.add('leader');
+      } else {
+        character.classList.remove('winning');
+        pepe.classList.remove('leader');
+      }
+      
+      // Loser shrinks
+      if (rank === 4 || item.change < 0) {
+        character.classList.add('losing');
+      } else {
+        character.classList.remove('losing');
+      }
+      
+      // Position in arena based on rank
+      pepe.style.order = rank;
     });
     
     sounds.tick();
