@@ -44,10 +44,12 @@ let gameState = {
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
+  console.log('Pik game initialized');
   loadStats();
   setupModeSelection();
   setupTimeframeSelection();
   setupCoinGrid();
+  console.log('All setup functions complete');
 });
 
 // Load stats from localStorage
@@ -60,8 +62,11 @@ function loadStats() {
 function setupModeSelection() {
   const freeBtn = document.getElementById('mode-free');
   const solBtn = document.getElementById('mode-sol');
+  
+  console.log('Mode buttons:', freeBtn, solBtn);
 
   freeBtn.addEventListener('click', () => {
+    console.log('Free mode clicked');
     gameState.mode = 'free';
     freeBtn.classList.add('active');
     solBtn.classList.remove('active');
@@ -69,6 +74,7 @@ function setupModeSelection() {
   });
 
   solBtn.addEventListener('click', async () => {
+    console.log('SOL mode clicked');
     // Check wallet connection
     if (!gameState.wallet) {
       await connectWallet();
@@ -400,8 +406,15 @@ function resetGame() {
 
 // Screen Navigation
 function showScreen(screenId) {
+  console.log('Showing screen:', screenId);
   document.querySelectorAll('.screen').forEach(screen => {
     screen.classList.remove('active');
   });
-  document.getElementById(screenId).classList.add('active');
+  const targetScreen = document.getElementById(screenId);
+  console.log('Target screen element:', targetScreen);
+  if (targetScreen) {
+    targetScreen.classList.add('active');
+  } else {
+    console.error('Screen not found:', screenId);
+  }
 }
