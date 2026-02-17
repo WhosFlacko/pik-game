@@ -1142,18 +1142,19 @@ header {
     position: absolute;
     top: 50%;
     left: 5%;
-    transform: translate(-50%, -50%);
+    transform: translate(0, -50%);
     font-size: 2.5rem;
     filter: drop-shadow(0 0 10px var(--solana-green));
     animation: horseGallop 0.3s steps(2) infinite;
-    transition: left 0.5s linear;
+    transition: left 0.3s linear;
     z-index: 10;
+    will-change: left;
 }
 
 @keyframes horseGallop {
-    0% { transform: translate(-50%, -50%) rotate(-3deg) scale(1); }
-    50% { transform: translate(-50%, -50%) rotate(3deg) scale(1.05); }
-    100% { transform: translate(-50%, -50%) rotate(-3deg) scale(1); }
+    0% { transform: translate(0, -50%) rotate(-3deg) scale(1); }
+    50% { transform: translate(0, -50%) rotate(3deg) scale(1.05); }
+    100% { transform: translate(0, -50%) rotate(-3deg) scale(1); }
 }
 
 .finish-line {
@@ -1177,6 +1178,6 @@ header {
 }
 
 @keyframes horseBounce {
-    0%, 100% { transform: translate(-50%, -50%) scale(1.1); }
-    50% { transform: translate(-50%, -60%) scale(1.15); }
+    0%, 100% { transform: translate(0, -50%) scale(1.1); }
+    50% { transform: translate(0, -60%) scale(1.15); }
 }

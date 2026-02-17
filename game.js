@@ -262,6 +262,9 @@ function startCountdown() {
   const totalDuration = gameState.endTime - gameState.startTime;
   let lastSecond = null;
   
+  console.log('Horse element found:', horseElement);
+  console.log('Total duration (ms):', totalDuration);
+  
   const updateTimer = () => {
     const remaining = gameState.endTime - Date.now();
     
@@ -275,16 +278,18 @@ function startCountdown() {
     timerElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
     
     // Update horse position (5% to 90% of track)
-    const progress = 5 + ((totalDuration - remaining) / totalDuration) * 85;
-    horseElement.style.left = `${progress}%`;
-    
-    // Play countdown sound in final 10 seconds
-    if (remaining < 10000) {
-      horseElement.classList.add('sprint');
-      if (seconds !== lastSecond) {
-        sounds.countdown();
-        lastSecond = seconds;
-        timerElement.classList.add('pulse');
+    if (horseElement) {
+      const progress = 5 + ((totalDuration - remaining) / totalDuration) * 85;
+      horseElement.style.left = `${progress}%`;
+      
+      // Play countdown sound in final 10 seconds
+      if (remaining < 10000) {
+        horseElement.classList.add('sprint');
+        if (seconds !== lastSecond) {
+          sounds.countdown();
+          lastSecond = seconds;
+          timerElement.classList.add('pulse');
+        }
       }
     }
     
