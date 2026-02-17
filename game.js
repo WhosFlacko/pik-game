@@ -2,13 +2,14 @@
 
 // Game State
 let gameState = {
-    mode: 'select', // select | active | results | leaderboard
-    timeframe: 15, // minutes
+    mode: 'select',
+    timeframe: 15,
     selectedCoin: null,
     coins: [],
     startPrices: {},
-    endPrices: {},
+    currentPrices: {},
     timerInterval: null,
+    priceInterval: null,
     remainingSeconds: 0,
     stats: {
         wins: 0,
@@ -18,7 +19,7 @@ let gameState = {
     }
 };
 
-// Coin configurations (top traded Solana ecosystem + majors)
+// Coin configurations
 const COIN_CONFIG = [
     { id: 'solana', symbol: 'SOL', name: 'Solana', emoji: '⚡' },
     { id: 'bitcoin', symbol: 'BTC', name: 'Bitcoin', emoji: '₿' },
@@ -28,8 +29,28 @@ const COIN_CONFIG = [
     { id: 'dogwifcoin', symbol: 'WIF', name: 'dogwifhat', emoji: '🐕' }
 ];
 
-// API Configuration
+// API - using CoinGecko with retry and rate limit handling
 const API_BASE = 'https://api.coingecko.com/api/v3';
+let lastApiCall = 0;
+const API_COOLDOWN = 6000; // 6 seconds between calls (free tier = ~10/min)
+
+async function fetchWithRateLimit(url) {
+    const now = Date.now();
+    const timeSinceLastCall = now - lastApiCall;
+    if (timeSinceLastCall < API_COOLDOWN) {
+        await new Promise(r => setTimeout(r, API_COOLDOWN - timeSinceLastCall));
+    }
+    lastApiCall = Date.now();
+    
+    const response = await fetch(url);
+    if (response.status === 429) {
+        // Rate limited — wait and retry once
+        await new Promise(r => setTimeout(r, 10000));
+        lastApiCall = Date.now();
+        return await fetch(url);
+    }
+    return response;
+}
 
 // DOM Elements
 const modeSelect = document.getElementById('modeSelect');
@@ -50,7 +71,6 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function setupEventListeners() {
-    // Mode selection
     document.querySelectorAll('.mode-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
             document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
@@ -59,22 +79,11 @@ function setupEventListeners() {
         });
     });
 
-    // Start game
     document.getElementById('startGame').addEventListener('click', startGame);
-
-    // Cancel game
     document.getElementById('cancelGame').addEventListener('click', cancelGame);
-
-    // Play again
-    document.getElementById('playAgain').addEventListener('click', () => {
-        showScreen('select');
-    });
-
-    // Leaderboard
+    document.getElementById('playAgain').addEventListener('click', () => showScreen('select'));
     document.getElementById('viewLeaderboard').addEventListener('click', showLeaderboard);
-    document.getElementById('backToGame').addEventListener('click', () => {
-        showScreen('select');
-    });
+    document.getElementById('backToGame').addEventListener('click', () => showScreen('select'));
 }
 
 function showScreen(screen) {
@@ -83,65 +92,74 @@ function showScreen(screen) {
     results.classList.add('hidden');
     leaderboard.classList.add('hidden');
 
-    if (screen === 'select') {
-        modeSelect.classList.remove('hidden');
-        gameState.mode = 'select';
-    } else if (screen === 'active') {
-        gameActive.classList.remove('hidden');
-        gameState.mode = 'active';
-    } else if (screen === 'results') {
-        results.classList.remove('hidden');
-        gameState.mode = 'results';
-    } else if (screen === 'leaderboard') {
-        leaderboard.classList.remove('hidden');
-        gameState.mode = 'leaderboard';
-    }
+    const el = { select: modeSelect, active: gameActive, results: results, leaderboard: leaderboard }[screen];
+    if (el) el.classList.remove('hidden');
+    gameState.mode = screen;
 }
 
 async function startGame() {
-    showScreen('active');
+    // Show loading state
+    const startBtn = document.getElementById('startGame');
+    startBtn.textContent = 'Loading prices...';
+    startBtn.disabled = true;
 
     // Select 4 random coins
-    gameState.coins = COIN_CONFIG.sort(() => Math.random() - 0.5).slice(0, 4);
+    const shuffled = [...COIN_CONFIG].sort(() => Math.random() - 0.5);
+    gameState.coins = shuffled.slice(0, 4);
     gameState.selectedCoin = null;
+    gameState.startPrices = {};
+    gameState.currentPrices = {};
 
     // Fetch starting prices
-    await fetchPrices('start');
+    const success = await fetchStartPrices();
+    
+    startBtn.textContent = 'Start Game';
+    startBtn.disabled = false;
 
-    // Render coins
+    if (!success) {
+        alert('Could not fetch prices. Try again in a few seconds.');
+        return;
+    }
+
+    showScreen('active');
     renderCoins();
 
     // Start timer
     gameState.remainingSeconds = gameState.timeframe * 60;
     startTimer();
+
+    // Start price updates (every 15 seconds to stay within rate limits)
+    gameState.priceInterval = setInterval(updateLivePrices, 15000);
 }
 
-async function fetchPrices(type) {
+async function fetchStartPrices() {
     const ids = gameState.coins.map(c => c.id).join(',');
     try {
-        const response = await fetch(`${API_BASE}/simple/price?ids=${ids}&vs_currencies=usd`);
+        const response = await fetchWithRateLimit(
+            `${API_BASE}/simple/price?ids=${ids}&vs_currencies=usd&include_24hr_change=true`
+        );
+        
+        if (!response.ok) {
+            console.error('API error:', response.status);
+            return false;
+        }
+
         const data = await response.json();
         
+        let allGood = true;
         gameState.coins.forEach(coin => {
-            const price = data[coin.id]?.usd || 0;
-            if (type === 'start') {
-                gameState.startPrices[coin.id] = price;
+            if (data[coin.id] && data[coin.id].usd) {
+                gameState.startPrices[coin.id] = data[coin.id].usd;
+                gameState.currentPrices[coin.id] = data[coin.id].usd;
             } else {
-                gameState.endPrices[coin.id] = price;
+                allGood = false;
             }
         });
+
+        return allGood;
     } catch (error) {
         console.error('Error fetching prices:', error);
-        // Fallback: simulate random prices for demo
-        gameState.coins.forEach(coin => {
-            const basePrice = Math.random() * 100 + 10;
-            if (type === 'start') {
-                gameState.startPrices[coin.id] = basePrice;
-            } else {
-                const change = (Math.random() - 0.5) * 10; // -5% to +5%
-                gameState.endPrices[coin.id] = basePrice * (1 + change / 100);
-            }
-        });
+        return false;
     }
 }
 
@@ -153,15 +171,27 @@ function renderCoins() {
         const card = document.createElement('div');
         card.className = 'coin-card';
         card.dataset.coinId = coin.id;
+        
+        // Format price based on value
+        const priceStr = formatPrice(price);
+        
         card.innerHTML = `
             <div class="coin-symbol">${coin.emoji}</div>
             <div class="coin-name">${coin.symbol}</div>
-            <div class="coin-price">$${price.toFixed(4)}</div>
-            <div class="coin-change">--</div>
+            <div class="coin-price">${priceStr}</div>
+            <div class="coin-change" style="color: var(--text-secondary)">0.00%</div>
         `;
         card.addEventListener('click', () => selectCoin(coin.id));
         coinGrid.appendChild(card);
     });
+}
+
+function formatPrice(price) {
+    if (price >= 1000) return '$' + price.toFixed(2);
+    if (price >= 1) return '$' + price.toFixed(2);
+    if (price >= 0.01) return '$' + price.toFixed(4);
+    if (price >= 0.0001) return '$' + price.toFixed(6);
+    return '$' + price.toFixed(8);
 }
 
 function selectCoin(coinId) {
@@ -171,37 +201,24 @@ function selectCoin(coinId) {
         gameState.selectedCoin = coinId;
     }
     
-    // Update UI
     document.querySelectorAll('.coin-card').forEach(card => {
-        if (card.dataset.coinId === gameState.selectedCoin) {
-            card.classList.add('selected');
-        } else {
-            card.classList.remove('selected');
-        }
+        card.classList.toggle('selected', card.dataset.coinId === gameState.selectedCoin);
     });
 }
 
 function startTimer() {
     const totalSeconds = gameState.timeframe * 60;
     
-    gameState.timerInterval = setInterval(async () => {
+    gameState.timerInterval = setInterval(() => {
         gameState.remainingSeconds--;
         
-        // Update timer display
         const minutes = Math.floor(gameState.remainingSeconds / 60);
         const seconds = gameState.remainingSeconds % 60;
         timerDisplay.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
         
-        // Update progress bar
         const progress = (gameState.remainingSeconds / totalSeconds) * 100;
         progressFill.style.width = `${progress}%`;
         
-        // Fetch live prices every 10 seconds
-        if (gameState.remainingSeconds % 10 === 0) {
-            await updateLivePrices();
-        }
-        
-        // End game
         if (gameState.remainingSeconds <= 0) {
             endGame();
         }
@@ -211,21 +228,28 @@ function startTimer() {
 async function updateLivePrices() {
     const ids = gameState.coins.map(c => c.id).join(',');
     try {
-        const response = await fetch(`${API_BASE}/simple/price?ids=${ids}&vs_currencies=usd`);
+        const response = await fetchWithRateLimit(
+            `${API_BASE}/simple/price?ids=${ids}&vs_currencies=usd`
+        );
+        
+        if (!response.ok) return;
+        
         const data = await response.json();
         
         gameState.coins.forEach(coin => {
-            const currentPrice = data[coin.id]?.usd || gameState.startPrices[coin.id];
-            const startPrice = gameState.startPrices[coin.id];
-            const change = ((currentPrice - startPrice) / startPrice) * 100;
-            
-            const card = document.querySelector(`.coin-card[data-coin-id="${coin.id}"]`);
-            if (card) {
-                const changeEl = card.querySelector('.coin-change');
-                const priceEl = card.querySelector('.coin-price');
-                priceEl.textContent = `$${currentPrice.toFixed(4)}`;
-                changeEl.textContent = `${change > 0 ? '+' : ''}${change.toFixed(2)}%`;
-                changeEl.className = `coin-change ${change >= 0 ? 'positive' : 'negative'}`;
+            if (data[coin.id] && data[coin.id].usd) {
+                const currentPrice = data[coin.id].usd;
+                gameState.currentPrices[coin.id] = currentPrice;
+                const startPrice = gameState.startPrices[coin.id];
+                const change = ((currentPrice - startPrice) / startPrice) * 100;
+                
+                const card = document.querySelector(`.coin-card[data-coin-id="${coin.id}"]`);
+                if (card) {
+                    card.querySelector('.coin-price').textContent = formatPrice(currentPrice);
+                    const changeEl = card.querySelector('.coin-change');
+                    changeEl.textContent = `${change >= 0 ? '+' : ''}${change.toFixed(4)}%`;
+                    changeEl.className = `coin-change ${change >= 0 ? 'positive' : 'negative'}`;
+                }
             }
         });
     } catch (error) {
@@ -235,49 +259,69 @@ async function updateLivePrices() {
 
 async function endGame() {
     clearInterval(gameState.timerInterval);
+    clearInterval(gameState.priceInterval);
     
     // Fetch final prices
-    await fetchPrices('end');
-    
-    // Calculate changes
-    const changes = gameState.coins.map(coin => {
-        const startPrice = gameState.startPrices[coin.id];
-        const endPrice = gameState.endPrices[coin.id];
-        const change = ((endPrice - startPrice) / startPrice) * 100;
-        return { coin, change };
-    });
-    
-    // Find winner
-    const winner = changes.reduce((max, curr) => curr.change > max.change ? curr : max, changes[0]);
-    
-    // Check if user won
-    const userWon = gameState.selectedCoin === winner.coin.id;
-    
-    // Update stats
-    if (userWon) {
-        gameState.stats.wins++;
-        gameState.stats.streak++;
-        if (gameState.stats.streak > gameState.stats.bestStreak) {
-            gameState.stats.bestStreak = gameState.stats.streak;
+    const ids = gameState.coins.map(c => c.id).join(',');
+    try {
+        const response = await fetchWithRateLimit(
+            `${API_BASE}/simple/price?ids=${ids}&vs_currencies=usd`
+        );
+        if (response.ok) {
+            const data = await response.json();
+            gameState.coins.forEach(coin => {
+                if (data[coin.id] && data[coin.id].usd) {
+                    gameState.currentPrices[coin.id] = data[coin.id].usd;
+                }
+            });
         }
-    } else {
-        gameState.stats.losses++;
-        gameState.stats.streak = 0;
+    } catch (e) {
+        console.error('Error fetching final prices:', e);
     }
     
-    saveStats();
-    updateStatsDisplay();
+    // Calculate real % changes
+    const changes = gameState.coins.map(coin => {
+        const startPrice = gameState.startPrices[coin.id];
+        const endPrice = gameState.currentPrices[coin.id];
+        const change = ((endPrice - startPrice) / startPrice) * 100;
+        return { coin, change, startPrice, endPrice };
+    });
     
-    // Show results
-    showResults(userWon, winner, changes);
+    // Find winner (biggest % gain)
+    const winner = changes.reduce((max, curr) => curr.change > max.change ? curr : max, changes[0]);
+    
+    // Check if user picked correctly
+    const userWon = gameState.selectedCoin && gameState.selectedCoin === winner.coin.id;
+    const noPick = !gameState.selectedCoin;
+    
+    // Update stats (only if they made a pick)
+    if (!noPick) {
+        if (userWon) {
+            gameState.stats.wins++;
+            gameState.stats.streak++;
+            if (gameState.stats.streak > gameState.stats.bestStreak) {
+                gameState.stats.bestStreak = gameState.stats.streak;
+            }
+        } else {
+            gameState.stats.losses++;
+            gameState.stats.streak = 0;
+        }
+        saveStats();
+        updateStatsDisplay();
+    }
+    
+    showResults(userWon, noPick, winner, changes);
 }
 
-function showResults(won, winner, changes) {
-    // Update result icon and text
+function showResults(won, noPick, winner, changes) {
     const resultIcon = document.getElementById('resultIcon');
     const resultText = document.getElementById('resultText');
     
-    if (won) {
+    if (noPick) {
+        resultIcon.textContent = '🤷';
+        resultText.textContent = "You Didn't Pick!";
+        resultText.style.color = 'var(--text-secondary)';
+    } else if (won) {
         resultIcon.textContent = '🎉';
         resultText.textContent = 'You Won!';
         resultText.style.color = 'var(--success)';
@@ -287,68 +331,71 @@ function showResults(won, winner, changes) {
         resultText.style.color = 'var(--error)';
     }
     
-    // Show winning coin
     const winningCoin = document.getElementById('winningCoin');
     winningCoin.innerHTML = `
         <strong>${winner.coin.emoji} ${winner.coin.symbol}</strong> had the biggest gain at 
-        <strong style="color: var(--success)">+${winner.change.toFixed(2)}%</strong>
+        <strong style="color: var(--success)">${winner.change >= 0 ? '+' : ''}${winner.change.toFixed(4)}%</strong>
     `;
     
-    // Show all changes
     const priceChanges = document.getElementById('priceChanges');
     priceChanges.innerHTML = changes
         .sort((a, b) => b.change - a.change)
-        .map(({ coin, change }) => `
+        .map(({ coin, change, startPrice, endPrice }) => `
             <div class="price-change-item">
                 <span>${coin.emoji} ${coin.symbol}</span>
+                <span style="color: var(--text-secondary); font-size: 0.8rem;">
+                    ${formatPrice(startPrice)} → ${formatPrice(endPrice)}
+                </span>
                 <span class="${change >= 0 ? 'positive' : 'negative'}">
-                    ${change > 0 ? '+' : ''}${change.toFixed(2)}%
+                    ${change >= 0 ? '+' : ''}${change.toFixed(4)}%
                 </span>
             </div>
         `).join('');
-    
-    // Highlight correct/wrong cards
-    document.querySelectorAll('.coin-card').forEach(card => {
-        const coinId = card.dataset.coinId;
-        if (coinId === winner.coin.id) {
-            card.classList.add('correct');
-        } else if (coinId === gameState.selectedCoin) {
-            card.classList.add('wrong');
-        }
-    });
     
     showScreen('results');
 }
 
 function cancelGame() {
     clearInterval(gameState.timerInterval);
+    clearInterval(gameState.priceInterval);
     showScreen('select');
 }
 
 function showLeaderboard() {
     const leaderboardList = document.getElementById('leaderboardList');
+    const totalGames = gameState.stats.wins + gameState.stats.losses;
+    const winRate = totalGames > 0 ? ((gameState.stats.wins / totalGames) * 100).toFixed(1) : '0.0';
     
-    // For now, show personal stats
-    // TODO: Implement real leaderboard with backend
     leaderboardList.innerHTML = `
         <div class="leaderboard-item">
-            <div class="leaderboard-rank">#1</div>
-            <div class="leaderboard-name">You</div>
-            <div class="leaderboard-score">${gameState.stats.wins} wins</div>
+            <div class="leaderboard-rank">🏆</div>
+            <div class="leaderboard-name">Total Wins</div>
+            <div class="leaderboard-score">${gameState.stats.wins}</div>
+        </div>
+        <div class="leaderboard-item">
+            <div class="leaderboard-rank">❌</div>
+            <div class="leaderboard-name">Total Losses</div>
+            <div class="leaderboard-score">${gameState.stats.losses}</div>
         </div>
         <div class="leaderboard-item">
             <div class="leaderboard-rank">🔥</div>
+            <div class="leaderboard-name">Current Streak</div>
+            <div class="leaderboard-score">${gameState.stats.streak}</div>
+        </div>
+        <div class="leaderboard-item">
+            <div class="leaderboard-rank">⭐</div>
             <div class="leaderboard-name">Best Streak</div>
             <div class="leaderboard-score">${gameState.stats.bestStreak}</div>
         </div>
         <div class="leaderboard-item">
             <div class="leaderboard-rank">📊</div>
             <div class="leaderboard-name">Win Rate</div>
-            <div class="leaderboard-score">
-                ${gameState.stats.wins + gameState.stats.losses > 0 
-                    ? ((gameState.stats.wins / (gameState.stats.wins + gameState.stats.losses)) * 100).toFixed(1) 
-                    : 0}%
-            </div>
+            <div class="leaderboard-score">${winRate}%</div>
+        </div>
+        <div class="leaderboard-item">
+            <div class="leaderboard-rank">🎮</div>
+            <div class="leaderboard-name">Games Played</div>
+            <div class="leaderboard-score">${totalGames}</div>
         </div>
     `;
     
