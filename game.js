@@ -274,8 +274,8 @@ function startCountdown() {
     const seconds = Math.floor((remaining % 60000) / 1000);
     timerElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
     
-    // Update horse position (0% to 90% of track)
-    const progress = ((totalDuration - remaining) / totalDuration) * 90;
+    // Update horse position (5% to 90% of track)
+    const progress = 5 + ((totalDuration - remaining) / totalDuration) * 85;
     horseElement.style.left = `${progress}%`;
     
     // Play countdown sound in final 10 seconds

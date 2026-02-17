@@ -1109,13 +1109,16 @@ header {
     width: 100%;
     height: 60px;
     margin: 1rem 0;
+    padding: 0 1rem;
     background: linear-gradient(to bottom, 
         transparent 0%, 
-        transparent 40%, 
-        rgba(255,255,255,0.1) 40%, 
-        rgba(255,255,255,0.1) 60%, 
-        transparent 60%);
-    overflow: hidden;
+        transparent 35%, 
+        rgba(20, 241, 149, 0.1) 35%, 
+        rgba(20, 241, 149, 0.15) 50%, 
+        rgba(20, 241, 149, 0.1) 65%, 
+        transparent 65%);
+    border-radius: 8px;
+    overflow: visible;
 }
 
 .track-line {
@@ -1138,7 +1141,7 @@ header {
 .horse {
     position: absolute;
     top: 50%;
-    left: 0%;
+    left: 5%;
     transform: translate(-50%, -50%);
     font-size: 2.5rem;
     filter: drop-shadow(0 0 10px var(--solana-green));
@@ -1148,9 +1151,9 @@ header {
 }
 
 @keyframes horseGallop {
-    0% { transform: translate(-50%, -50%) rotate(-2deg); }
-    50% { transform: translate(-50%, -50%) rotate(2deg); }
-    100% { transform: translate(-50%, -50%) rotate(-2deg); }
+    0% { transform: translate(-50%, -50%) rotate(-3deg) scale(1); }
+    50% { transform: translate(-50%, -50%) rotate(3deg) scale(1.05); }
+    100% { transform: translate(-50%, -50%) rotate(-3deg) scale(1); }
 }
 
 .finish-line {
@@ -1169,10 +1172,11 @@ header {
 
 /* Horse speeds up in final 10 seconds */
 .horse.sprint {
-    animation: horseGallop 0.15s steps(2) infinite, horseBounce 0.3s ease-in-out infinite;
+    animation: horseGallop 0.1s steps(2) infinite, horseBounce 0.2s ease-in-out infinite;
+    filter: drop-shadow(0 0 20px var(--solana-green)) drop-shadow(0 0 30px var(--solana-purple));
 }
 
 @keyframes horseBounce {
-    0%, 100% { transform: translate(-50%, -50%); }
-    50% { transform: translate(-50%, -55%); }
+    0%, 100% { transform: translate(-50%, -50%) scale(1.1); }
+    50% { transform: translate(-50%, -60%) scale(1.15); }
 }
