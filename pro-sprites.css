@@ -1,0 +1,397 @@
+/* PROFESSIONAL ANIMATED PEPE FIGHTERS */
+
+.pepe-character {
+    position: relative;
+    width: 100px !important;
+    height: 140px !important;
+    font-size: 0 !important;
+    filter: drop-shadow(0 8px 16px rgba(0,0,0,0.3));
+    animation: professionalStance 3s ease-in-out infinite;
+}
+
+@keyframes professionalStance {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-6px) scale(1.02); }
+}
+
+/* PEPE BODY - Modern Design */
+.pepe-body {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+}
+
+/* HEAD - Smooth rounded design */
+.pepe-head {
+    position: absolute;
+    top: 5px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 50px;
+    height: 45px;
+    background: linear-gradient(145deg, #9ACD32 0%, #7CB342 100%);
+    border-radius: 50% 50% 48% 48% / 60% 60% 40% 40%;
+    box-shadow: 
+        inset -3px -3px 6px rgba(0,0,0,0.2),
+        inset 3px 3px 6px rgba(255,255,255,0.3),
+        0 4px 8px rgba(0,0,0,0.2);
+    z-index: 5;
+}
+
+/* EYES - Larger, expressive */
+.pepe-eyes {
+    position: absolute;
+    top: 15px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 12px;
+    z-index: 6;
+}
+
+.pepe-eye {
+    width: 12px;
+    height: 16px;
+    background: linear-gradient(180deg, #ffffff 0%, #f0f0f0 100%);
+    border: none;
+    border-radius: 50% / 60% 60% 40% 40%;
+    box-shadow: 
+        0 2px 4px rgba(0,0,0,0.3),
+        inset 0 1px 2px rgba(255,255,255,0.5);
+    position: relative;
+    overflow: hidden;
+}
+
+.pepe-eye::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 4px;
+    height: 6px;
+    background: rgba(255,255,255,0.6);
+    border-radius: 50%;
+}
+
+.pepe-pupil {
+    position: absolute;
+    width: 6px;
+    height: 9px;
+    background: linear-gradient(145deg, #000000 0%, #1a1a1a 100%);
+    border-radius: 50%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
+
+/* MOUTH - Subtle detail */
+.pepe-mouth {
+    position: absolute;
+    bottom: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 24px;
+    height: 6px;
+    border-bottom: 2px solid rgba(0,0,0,0.3);
+    border-radius: 0 0 12px 12px;
+    background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.1) 100%);
+}
+
+/* TORSO - Athletic proportions */
+.pepe-torso {
+    position: absolute;
+    top: 48px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 55px;
+    height: 48px;
+    background: linear-gradient(145deg, #9ACD32 0%, #7CB342 50%, #689F38 100%);
+    border-radius: 12px 12px 8px 8px;
+    box-shadow: 
+        inset -2px -2px 4px rgba(0,0,0,0.2),
+        inset 2px 2px 4px rgba(255,255,255,0.2),
+        0 4px 8px rgba(0,0,0,0.2);
+    z-index: 3;
+}
+
+/* Center line detail */
+.pepe-torso::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 5px;
+    bottom: 5px;
+    width: 1px;
+    background: linear-gradient(180deg, transparent, rgba(0,0,0,0.2), transparent);
+}
+
+/* ARMS - Muscular definition */
+.pepe-arm {
+    position: absolute;
+    width: 18px;
+    height: 52px;
+    background: linear-gradient(145deg, #9ACD32 0%, #7CB342 50%, #689F38 100%);
+    border-radius: 9px;
+    box-shadow: 
+        inset -1px -1px 3px rgba(0,0,0,0.2),
+        inset 1px 1px 3px rgba(255,255,255,0.2),
+        0 3px 6px rgba(0,0,0,0.2);
+    z-index: 2;
+}
+
+.pepe-arm::before {
+    content: '';
+    position: absolute;
+    top: 15px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 12px;
+    height: 12px;
+    background: radial-gradient(circle, rgba(255,255,255,0.2), transparent);
+    border-radius: 50%;
+}
+
+.pepe-arm.left {
+    top: 52px;
+    left: 10px;
+    transform-origin: top center;
+    animation: leftArmPro 3s ease-in-out infinite;
+}
+
+.pepe-arm.right {
+    top: 52px;
+    right: 10px;
+    transform-origin: top center;
+    animation: rightArmPro 3s ease-in-out infinite;
+}
+
+@keyframes leftArmPro {
+    0%, 100% { transform: rotate(-15deg); }
+    50% { transform: rotate(-25deg); }
+}
+
+@keyframes rightArmPro {
+    0%, 100% { transform: rotate(15deg); }
+    50% { transform: rotate(25deg); }
+}
+
+/* FISTS - Defined knuckles */
+.pepe-fist {
+    position: absolute;
+    bottom: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 16px;
+    height: 16px;
+    background: linear-gradient(145deg, #7CB342 0%, #689F38 100%);
+    border-radius: 50%;
+    box-shadow: 
+        inset -1px -1px 2px rgba(0,0,0,0.3),
+        0 2px 4px rgba(0,0,0,0.2);
+}
+
+/* LEGS - Strong stance */
+.pepe-leg {
+    position: absolute;
+    width: 22px;
+    height: 48px;
+    background: linear-gradient(145deg, #9ACD32 0%, #7CB342 50%, #689F38 100%);
+    border-radius: 11px;
+    box-shadow: 
+        inset -1px -1px 3px rgba(0,0,0,0.2),
+        inset 1px 1px 3px rgba(255,255,255,0.2),
+        0 3px 6px rgba(0,0,0,0.2);
+    z-index: 1;
+}
+
+.pepe-leg.left {
+    bottom: 0;
+    left: 22px;
+    transform-origin: top center;
+    animation: leftLegPro 3s ease-in-out infinite;
+}
+
+.pepe-leg.right {
+    bottom: 0;
+    right: 22px;
+    transform-origin: top center;
+    animation: rightLegPro 3s ease-in-out infinite;
+}
+
+@keyframes leftLegPro {
+    0%, 100% { transform: rotate(-3deg); }
+    50% { transform: rotate(3deg); }
+}
+
+@keyframes rightLegPro {
+    0%, 100% { transform: rotate(3deg); }
+    50% { transform: rotate(-3deg); }
+}
+
+/* FEET - Boots style */
+.pepe-foot {
+    position: absolute;
+    bottom: -4px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 22px;
+    height: 12px;
+    background: linear-gradient(145deg, #689F38 0%, #558B2F 100%);
+    border-radius: 0 0 11px 11px / 0 0 8px 8px;
+    box-shadow: 
+        inset -1px -1px 2px rgba(0,0,0,0.3),
+        0 2px 4px rgba(0,0,0,0.2);
+}
+
+/* COLOR SCHEMES - Professional palettes */
+
+/* BTC - Gold/Orange premium */
+.pepe-fighter[data-coin-id="bitcoin"] .pepe-head,
+.pepe-fighter[data-coin-id="bitcoin"] .pepe-torso,
+.pepe-fighter[data-coin-id="bitcoin"] .pepe-arm,
+.pepe-fighter[data-coin-id="bitcoin"] .pepe-leg {
+    background: linear-gradient(145deg, #FFB84D 0%, #FF9500 50%, #E68900 100%);
+}
+
+.pepe-fighter[data-coin-id="bitcoin"] .pepe-fist,
+.pepe-fighter[data-coin-id="bitcoin"] .pepe-foot {
+    background: linear-gradient(145deg, #E68900 0%, #CC7A00 100%);
+}
+
+/* ETH - Royal Purple/Blue */
+.pepe-fighter[data-coin-id="ethereum"] .pepe-head,
+.pepe-fighter[data-coin-id="ethereum"] .pepe-torso,
+.pepe-fighter[data-coin-id="ethereum"] .pepe-arm,
+.pepe-fighter[data-coin-id="ethereum"] .pepe-leg {
+    background: linear-gradient(145deg, #8E99F3 0%, #627EEA 50%, #4C63B6 100%);
+}
+
+.pepe-fighter[data-coin-id="ethereum"] .pepe-fist,
+.pepe-fighter[data-coin-id="ethereum"] .pepe-foot {
+    background: linear-gradient(145deg, #4C63B6 0%, #3B4F94 100%);
+}
+
+/* SOL - Vibrant Green */
+.pepe-fighter[data-coin-id="solana"] .pepe-head,
+.pepe-fighter[data-coin-id="solana"] .pepe-torso,
+.pepe-fighter[data-coin-id="solana"] .pepe-arm,
+.pepe-fighter[data-coin-id="solana"] .pepe-leg {
+    background: linear-gradient(145deg, #14F195 0%, #00D084 50%, #00B872 100%);
+}
+
+.pepe-fighter[data-coin-id="solana"] .pepe-fist,
+.pepe-fighter[data-coin-id="solana"] .pepe-foot {
+    background: linear-gradient(145deg, #00B872 0%, #009960 100%);
+}
+
+/* DOGE - Warm Yellow */
+.pepe-fighter[data-coin-id="dogecoin"] .pepe-head,
+.pepe-fighter[data-coin-id="dogecoin"] .pepe-torso,
+.pepe-fighter[data-coin-id="dogecoin"] .pepe-arm,
+.pepe-fighter[data-coin-id="dogecoin"] .pepe-leg {
+    background: linear-gradient(145deg, #FFD966 0%, #FFC729 50%, #E0AF22 100%);
+}
+
+.pepe-fighter[data-coin-id="dogecoin"] .pepe-fist,
+.pepe-fighter[data-coin-id="dogecoin"] .pepe-foot {
+    background: linear-gradient(145deg, #E0AF22 0%, #C29B1D 100%);
+}
+
+/* ATTACKING - Dynamic motion */
+.pepe-character.attacking .pepe-arm.right {
+    animation: punchPro 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) !important;
+}
+
+@keyframes punchPro {
+    0% { transform: rotate(15deg); }
+    40% { transform: rotate(-110deg) translateY(-15px) scale(1.1); }
+    60% { transform: rotate(-115deg) translateY(-18px) scale(1.15); }
+    100% { transform: rotate(15deg); }
+}
+
+.pepe-character.attacking .pepe-torso {
+    animation: torsoLeanPro 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes torsoLeanPro {
+    0%, 100% { transform: translateX(-50%) rotate(0deg) scale(1); }
+    50% { transform: translateX(-45%) rotate(12deg) scale(1.05); }
+}
+
+/* HIT - Impact reaction */
+.pepe-character.hit {
+    animation: takeDamage 0.4s cubic-bezier(0.6, -0.28, 0.735, 0.045);
+}
+
+@keyframes takeDamage {
+    0%, 100% { transform: translateX(0); filter: brightness(1); }
+    25% { transform: translateX(-15px) rotate(-8deg); filter: brightness(0.7); }
+    50% { transform: translateX(-20px) rotate(-10deg) scale(0.95); filter: brightness(0.4); }
+    75% { transform: translateX(-10px) rotate(-5deg); filter: brightness(0.7); }
+}
+
+/* JUTSU - Epic spin */
+.pepe-character.jutsu {
+    animation: epicJutsu 1s cubic-bezier(0.68, -0.55, 0.265, 1.55) !important;
+    filter: drop-shadow(0 0 20px currentColor) brightness(1.3);
+}
+
+@keyframes epicJutsu {
+    0% { transform: scale(1) rotate(0deg); }
+    25% { transform: scale(0.85) rotate(180deg); }
+    50% { transform: scale(1.3) rotate(360deg); }
+    75% { transform: scale(1.15) rotate(540deg); }
+    100% { transform: scale(1) rotate(720deg); }
+}
+
+/* WINNING - Champion pose */
+.pepe-character.winning {
+    animation: championPose 1.2s ease-in-out infinite !important;
+    filter: drop-shadow(0 0 25px gold) brightness(1.4);
+}
+
+@keyframes championPose {
+    0%, 100% { transform: scale(1.4) translateY(-15px); }
+    50% { transform: scale(1.5) translateY(-25px); }
+}
+
+.pepe-character.winning .pepe-arm.left,
+.pepe-character.winning .pepe-arm.right {
+    animation: victoryArms 0.6s ease-in-out infinite !important;
+}
+
+@keyframes victoryArms {
+    0%, 100% { transform: rotate(-150deg); }
+    50% { transform: rotate(-130deg); }
+}
+
+/* LOSING - Defeated */
+.pepe-character.losing {
+    animation: defeatedPose 2s ease-in-out infinite !important;
+    filter: grayscale(0.7) brightness(0.6) blur(0.5px);
+    opacity: 0.7;
+}
+
+@keyframes defeatedPose {
+    0%, 100% { transform: scale(0.7) translateY(15px) rotate(-15deg); }
+    50% { transform: scale(0.65) translateY(20px) rotate(15deg); }
+}
+
+/* COIN SELECTION - Preview styling */
+.coin-card .pepe-character {
+    transform: scale(0.65);
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
+}
+
+.coin-card:hover .pepe-character {
+    transform: scale(0.7);
+    filter: drop-shadow(0 6px 12px rgba(0,0,0,0.3));
+}
+
+.coin-card.selected .pepe-character {
+    transform: scale(0.75);
+    filter: drop-shadow(0 0 20px currentColor) brightness(1.2);
+}
