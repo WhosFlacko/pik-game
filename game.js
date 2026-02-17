@@ -270,7 +270,32 @@ function renderCoinGrid() {
     card.className = 'coin-card';
     card.dataset.coinId = coin.id;
     card.innerHTML = `
-      <div class="coin-pepe" style="filter: ${coin.filter}">🐸</div>
+      <div class="coin-pepe-preview">
+        <div class="pepe-character" style="transform: scale(0.7);">
+          <div class="pepe-body">
+            <div class="pepe-head">
+              <div class="pepe-eyes">
+                <div class="pepe-eye"><div class="pepe-pupil"></div></div>
+                <div class="pepe-eye"><div class="pepe-pupil"></div></div>
+              </div>
+              <div class="pepe-mouth"></div>
+            </div>
+            <div class="pepe-torso"></div>
+            <div class="pepe-arm left">
+              <div class="pepe-fist"></div>
+            </div>
+            <div class="pepe-arm right">
+              <div class="pepe-fist"></div>
+            </div>
+            <div class="pepe-leg left">
+              <div class="pepe-foot"></div>
+            </div>
+            <div class="pepe-leg right">
+              <div class="pepe-foot"></div>
+            </div>
+          </div>
+        </div>
+      </div>
       <div class="coin-symbol" style="color: ${coin.color}">${coin.symbol}</div>
       <div class="coin-name">${coin.name}</div>
     `;
@@ -449,7 +474,30 @@ function renderRaceDisplay() {
     
     pepeContainer.innerHTML = `
       <div class="power-level">POWER: 9000</div>
-      <div class="pepe-character" style="filter: ${coin.filter}">🐸</div>
+      <div class="pepe-character">
+        <div class="pepe-body">
+          <div class="pepe-head">
+            <div class="pepe-eyes">
+              <div class="pepe-eye"><div class="pepe-pupil"></div></div>
+              <div class="pepe-eye"><div class="pepe-pupil"></div></div>
+            </div>
+            <div class="pepe-mouth"></div>
+          </div>
+          <div class="pepe-torso"></div>
+          <div class="pepe-arm left">
+            <div class="pepe-fist"></div>
+          </div>
+          <div class="pepe-arm right">
+            <div class="pepe-fist"></div>
+          </div>
+          <div class="pepe-leg left">
+            <div class="pepe-foot"></div>
+          </div>
+          <div class="pepe-leg right">
+            <div class="pepe-foot"></div>
+          </div>
+        </div>
+      </div>
       <div class="pepe-info">
         <div class="pepe-rank">-</div>
         <div class="pepe-name" style="color: ${coin.color}">${coin.symbol}</div>

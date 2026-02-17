@@ -54,25 +54,27 @@
     z-index: 10;
 }
 
-/* Position fighters */
+/* Position fighters - Atari Godzilla style */
 .pepe-fighter:nth-child(1) {
-    bottom: 100px;
-    left: 10%;
+    bottom: 120px;
+    left: 5%;
+    transform: scaleX(-1); /* Face right */
 }
 
 .pepe-fighter:nth-child(2) {
-    bottom: 100px;
-    right: 10%;
+    bottom: 120px;
+    right: 5%;
 }
 
 .pepe-fighter:nth-child(3) {
-    bottom: 50px;
-    left: 30%;
+    bottom: 60px;
+    left: 25%;
+    transform: scaleX(-1); /* Face right */
 }
 
 .pepe-fighter:nth-child(4) {
-    bottom: 50px;
-    right: 30%;
+    bottom: 60px;
+    right: 25%;
 }
 
 /* Your selected Pepe */
@@ -87,83 +89,17 @@
     background: radial-gradient(circle, rgba(20, 241, 149, 0.2), transparent);
 }
 
-/* PEPE CHARACTER */
-.pepe-character {
-    font-size: 4rem;
-    position: relative;
-    animation: fighterStance 2s ease-in-out infinite;
-    transition: transform 0.3s ease;
+/* PEPE CHARACTER - Removed old emoji styling, now handled by pepe-sprites.css */
+.battle-arena .pepe-character {
+    /* Size handled by sprite CSS */
 }
 
 @keyframes fighterStance {
-    0%, 100% { transform: translateY(0) rotate(-3deg); }
-    50% { transform: translateY(-8px) rotate(3deg); }
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-8px) scale(1.02); }
 }
 
-/* ATTACKING ANIMATIONS */
-.pepe-character.attacking {
-    animation: attack 0.6s ease-in-out;
-}
-
-@keyframes attack {
-    0% { transform: translateX(0) scale(1) rotate(0deg); }
-    30% { transform: translateX(30px) scale(1.2) rotate(15deg); }
-    50% { transform: translateX(40px) scale(1.3) rotate(20deg); }
-    70% { transform: translateX(30px) scale(1.2) rotate(15deg); }
-    100% { transform: translateX(0) scale(1) rotate(0deg); }
-}
-
-/* JUTSU/SPECIAL ATTACK */
-.pepe-character.jutsu {
-    animation: jutsuAttack 1s ease-in-out;
-}
-
-@keyframes jutsuAttack {
-    0% { transform: scale(1) rotate(0deg); }
-    20% { transform: scale(0.8) rotate(-45deg); }
-    40% { transform: scale(1.5) rotate(45deg); }
-    60% { transform: scale(1.3) rotate(180deg); }
-    80% { transform: scale(1.4) rotate(360deg); }
-    100% { transform: scale(1) rotate(720deg); }
-}
-
-/* GETTING HIT */
-.pepe-character.hit {
-    animation: takeHit 0.4s ease-in-out;
-}
-
-@keyframes takeHit {
-    0% { transform: translateX(0) scale(1); }
-    25% { transform: translateX(-20px) scale(0.9) rotate(-10deg); }
-    50% { transform: translateX(-30px) scale(0.85) rotate(-15deg); filter: brightness(0.5); }
-    75% { transform: translateX(-20px) scale(0.9) rotate(-10deg); }
-    100% { transform: translateX(0) scale(1) rotate(0deg); }
-}
-
-/* WINNING PEPE */
-.pepe-character.winning {
-    animation: victoryDance 1s ease-in-out infinite;
-    filter: brightness(1.5) drop-shadow(0 0 30px gold) drop-shadow(0 0 50px gold);
-}
-
-@keyframes victoryDance {
-    0%, 100% { transform: scale(1.5) rotate(-10deg) translateY(0); }
-    25% { transform: scale(1.6) rotate(10deg) translateY(-20px); }
-    50% { transform: scale(1.7) rotate(-10deg) translateY(-30px); }
-    75% { transform: scale(1.6) rotate(10deg) translateY(-20px); }
-}
-
-/* LOSING PEPE */
-.pepe-character.losing {
-    animation: defeated 2s ease-in-out infinite;
-    filter: grayscale(0.8) brightness(0.5) blur(1px);
-    opacity: 0.5;
-}
-
-@keyframes defeated {
-    0%, 100% { transform: scale(0.6) rotate(-20deg) translateY(10px); }
-    50% { transform: scale(0.5) rotate(20deg) translateY(15px); }
-}
+/* Attack/Hit/Jutsu/Winning/Losing animations now in pepe-sprites.css */
 
 /* ENERGY BLAST PROJECTILE */
 .energy-blast {

@@ -1,0 +1,463 @@
+/* ATARI-STYLE PEPE FIGHTER SPRITES */
+
+.pepe-character {
+    position: relative;
+    width: 80px;
+    height: 120px;
+    font-size: 0; /* Hide emoji */
+    animation: fighterStance 2s ease-in-out infinite;
+}
+
+/* PEPE BODY STRUCTURE */
+.pepe-body {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+}
+
+/* HEAD */
+.pepe-head {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 40px;
+    height: 35px;
+    background: #8BC34A;
+    border-radius: 50% 50% 45% 45%;
+    border: 3px solid #33691E;
+    z-index: 5;
+}
+
+/* EYES */
+.pepe-eyes {
+    position: absolute;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 8px;
+    z-index: 6;
+}
+
+.pepe-eye {
+    width: 8px;
+    height: 12px;
+    background: white;
+    border: 2px solid #33691E;
+    border-radius: 50%;
+    position: relative;
+}
+
+.pepe-pupil {
+    position: absolute;
+    width: 4px;
+    height: 6px;
+    background: #000;
+    border-radius: 50%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+/* MOUTH */
+.pepe-mouth {
+    position: absolute;
+    bottom: 5px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 20px;
+    height: 8px;
+    border: 2px solid #33691E;
+    border-top: none;
+    border-radius: 0 0 10px 10px;
+    background: #689F38;
+}
+
+/* TORSO */
+.pepe-torso {
+    position: absolute;
+    top: 35px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 45px;
+    height: 40px;
+    background: linear-gradient(180deg, #8BC34A 0%, #7CB342 100%);
+    border: 3px solid #33691E;
+    border-radius: 8px 8px 5px 5px;
+    z-index: 3;
+}
+
+/* ARMS */
+.pepe-arm {
+    position: absolute;
+    width: 15px;
+    height: 45px;
+    background: #8BC34A;
+    border: 3px solid #33691E;
+    border-radius: 8px;
+    z-index: 2;
+}
+
+.pepe-arm.left {
+    top: 40px;
+    left: 8px;
+    transform-origin: top center;
+    animation: leftArmIdle 2s ease-in-out infinite;
+}
+
+.pepe-arm.right {
+    top: 40px;
+    right: 8px;
+    transform-origin: top center;
+    animation: rightArmIdle 2s ease-in-out infinite;
+}
+
+@keyframes leftArmIdle {
+    0%, 100% { transform: rotate(-20deg); }
+    50% { transform: rotate(-30deg); }
+}
+
+@keyframes rightArmIdle {
+    0%, 100% { transform: rotate(20deg); }
+    50% { transform: rotate(30deg); }
+}
+
+/* FISTS */
+.pepe-fist {
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 12px;
+    height: 12px;
+    background: #7CB342;
+    border: 3px solid #33691E;
+    border-radius: 50%;
+}
+
+/* LEGS */
+.pepe-leg {
+    position: absolute;
+    width: 18px;
+    height: 45px;
+    background: #8BC34A;
+    border: 3px solid #33691E;
+    border-radius: 5px;
+    z-index: 1;
+}
+
+.pepe-leg.left {
+    bottom: 0;
+    left: 18px;
+    transform-origin: top center;
+    animation: leftLegIdle 2s ease-in-out infinite;
+}
+
+.pepe-leg.right {
+    bottom: 0;
+    right: 18px;
+    transform-origin: top center;
+    animation: rightLegIdle 2s ease-in-out infinite;
+}
+
+@keyframes leftLegIdle {
+    0%, 100% { transform: rotate(-5deg); }
+    50% { transform: rotate(5deg); }
+}
+
+@keyframes rightLegIdle {
+    0%, 100% { transform: rotate(5deg); }
+    50% { transform: rotate(-5deg); }
+}
+
+/* FEET */
+.pepe-foot {
+    position: absolute;
+    bottom: -6px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 18px;
+    height: 10px;
+    background: #7CB342;
+    border: 3px solid #33691E;
+    border-radius: 0 0 8px 8px;
+}
+
+/* COLOR VARIATIONS FOR DIFFERENT COINS */
+/* BTC - Orange */
+.pepe-fighter[data-coin-id="bitcoin"] .pepe-head,
+.pepe-fighter[data-coin-id="bitcoin"] .pepe-torso,
+.pepe-fighter[data-coin-id="bitcoin"] .pepe-arm,
+.pepe-fighter[data-coin-id="bitcoin"] .pepe-leg {
+    background: linear-gradient(180deg, #FFB74D 0%, #FF9800 100%);
+}
+
+.pepe-fighter[data-coin-id="bitcoin"] .pepe-fist,
+.pepe-fighter[data-coin-id="bitcoin"] .pepe-foot {
+    background: #F57C00;
+}
+
+/* ETH - Blue/Purple */
+.pepe-fighter[data-coin-id="ethereum"] .pepe-head,
+.pepe-fighter[data-coin-id="ethereum"] .pepe-torso,
+.pepe-fighter[data-coin-id="ethereum"] .pepe-arm,
+.pepe-fighter[data-coin-id="ethereum"] .pepe-leg {
+    background: linear-gradient(180deg, #7986CB 0%, #5C6BC0 100%);
+}
+
+.pepe-fighter[data-coin-id="ethereum"] .pepe-fist,
+.pepe-fighter[data-coin-id="ethereum"] .pepe-foot {
+    background: #3949AB;
+}
+
+/* SOL - Green */
+.pepe-fighter[data-coin-id="solana"] .pepe-head,
+.pepe-fighter[data-coin-id="solana"] .pepe-torso,
+.pepe-fighter[data-coin-id="solana"] .pepe-arm,
+.pepe-fighter[data-coin-id="solana"] .pepe-leg {
+    background: linear-gradient(180deg, #66BB6A 0%, #4CAF50 100%);
+}
+
+.pepe-fighter[data-coin-id="solana"] .pepe-fist,
+.pepe-fighter[data-coin-id="solana"] .pepe-foot {
+    background: #2E7D32;
+}
+
+/* DOGE - Yellow */
+.pepe-fighter[data-coin-id="dogecoin"] .pepe-head,
+.pepe-fighter[data-coin-id="dogecoin"] .pepe-torso,
+.pepe-fighter[data-coin-id="dogecoin"] .pepe-arm,
+.pepe-fighter[data-coin-id="dogecoin"] .pepe-leg {
+    background: linear-gradient(180deg, #FFD54F 0%, #FFC107 100%);
+}
+
+.pepe-fighter[data-coin-id="dogecoin"] .pepe-fist,
+.pepe-fighter[data-coin-id="dogecoin"] .pepe-foot {
+    background: #FF8F00;
+}
+
+/* ATTACKING ANIMATION */
+.pepe-character.attacking .pepe-arm.right {
+    animation: punchAttack 0.6s ease-in-out !important;
+}
+
+@keyframes punchAttack {
+    0% { transform: rotate(20deg); }
+    30% { transform: rotate(-90deg) translateY(-20px); }
+    50% { transform: rotate(-100deg) translateY(-25px); }
+    70% { transform: rotate(-90deg) translateY(-20px); }
+    100% { transform: rotate(20deg); }
+}
+
+.pepe-character.attacking .pepe-torso {
+    animation: torsoAttack 0.6s ease-in-out;
+}
+
+@keyframes torsoAttack {
+    0%, 100% { transform: translateX(-50%) rotate(0deg); }
+    50% { transform: translateX(-30%) rotate(15deg); }
+}
+
+/* GETTING HIT ANIMATION */
+.pepe-character.hit .pepe-head {
+    animation: headHit 0.4s ease-in-out;
+}
+
+@keyframes headHit {
+    0%, 100% { transform: translateX(-50%) rotate(0deg); }
+    25% { transform: translateX(-60%) rotate(-15deg); }
+    50% { transform: translateX(-65%) rotate(-20deg); filter: brightness(0.5); }
+    75% { transform: translateX(-60%) rotate(-15deg); }
+}
+
+.pepe-character.hit .pepe-torso {
+    animation: torsoHit 0.4s ease-in-out;
+}
+
+@keyframes torsoHit {
+    0%, 100% { transform: translateX(-50%); }
+    50% { transform: translateX(-70%) scale(0.9); }
+}
+
+/* JUTSU ANIMATION */
+.pepe-character.jutsu {
+    animation: jutsuSpin 1s ease-in-out !important;
+}
+
+@keyframes jutsuSpin {
+    0% { transform: scale(1) rotate(0deg); }
+    20% { transform: scale(0.8) rotate(-45deg); }
+    40% { transform: scale(1.2) rotate(180deg); }
+    60% { transform: scale(1.1) rotate(360deg); }
+    80% { transform: scale(1.2) rotate(540deg); }
+    100% { transform: scale(1) rotate(720deg); }
+}
+
+.pepe-character.jutsu .pepe-arm {
+    animation: armsJutsu 1s ease-in-out;
+}
+
+@keyframes armsJutsu {
+    0%, 100% { transform: rotate(0deg); }
+    50% { transform: rotate(360deg) scale(1.2); }
+}
+
+/* WINNING ANIMATION */
+.pepe-character.winning {
+    animation: victoryDance 1s ease-in-out infinite !important;
+}
+
+.pepe-character.winning .pepe-arm.left {
+    animation: victoryArmLeft 0.5s ease-in-out infinite !important;
+}
+
+.pepe-character.winning .pepe-arm.right {
+    animation: victoryArmRight 0.5s ease-in-out infinite !important;
+}
+
+@keyframes victoryArmLeft {
+    0%, 100% { transform: rotate(-160deg); }
+    50% { transform: rotate(-140deg); }
+}
+
+@keyframes victoryArmRight {
+    0%, 100% { transform: rotate(160deg); }
+    50% { transform: rotate(140deg); }
+}
+
+.pepe-character.winning .pepe-leg {
+    animation: victoryLegs 0.3s ease-in-out infinite;
+}
+
+@keyframes victoryLegs {
+    0%, 100% { transform: rotate(0deg); }
+    50% { transform: rotate(20deg); }
+}
+
+/* LOSING/DEFEATED ANIMATION */
+.pepe-character.losing {
+    animation: defeated 2s ease-in-out infinite !important;
+    filter: grayscale(0.8) brightness(0.5);
+    opacity: 0.6;
+}
+
+.pepe-character.losing .pepe-head {
+    animation: defeatedHead 2s ease-in-out infinite;
+}
+
+@keyframes defeatedHead {
+    0%, 100% { transform: translateX(-50%) rotate(-20deg); }
+    50% { transform: translateX(-50%) rotate(20deg); }
+}
+
+.pepe-character.losing .pepe-arm {
+    animation: defeatedArms 2s ease-in-out infinite !important;
+}
+
+@keyframes defeatedArms {
+    0%, 100% { transform: rotate(0deg) translateY(10px); }
+    50% { transform: rotate(0deg) translateY(15px); }
+}
+
+/* SCALE UP/DOWN FOR PERFORMANCE */
+.pepe-character {
+    transition: transform 0.3s ease;
+}
+
+/* Responsive sizing */
+@media (max-width: 480px) {
+    .pepe-character {
+        width: 60px;
+        height: 90px;
+    }
+    
+    .pepe-head {
+        width: 30px;
+        height: 26px;
+    }
+    
+    .pepe-torso {
+        width: 34px;
+        height: 30px;
+    }
+}
+
+/* COIN SELECTION PREVIEW */
+.coin-pepe-preview {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100px;
+    margin-bottom: 0.5rem;
+}
+
+.coin-card[data-coin-id="bitcoin"] .pepe-head,
+.coin-card[data-coin-id="bitcoin"] .pepe-torso,
+.coin-card[data-coin-id="bitcoin"] .pepe-arm,
+.coin-card[data-coin-id="bitcoin"] .pepe-leg {
+    background: linear-gradient(180deg, #FFB74D 0%, #FF9800 100%);
+}
+
+.coin-card[data-coin-id="bitcoin"] .pepe-fist,
+.coin-card[data-coin-id="bitcoin"] .pepe-foot {
+    background: #F57C00;
+}
+
+.coin-card[data-coin-id="ethereum"] .pepe-head,
+.coin-card[data-coin-id="ethereum"] .pepe-torso,
+.coin-card[data-coin-id="ethereum"] .pepe-arm,
+.coin-card[data-coin-id="ethereum"] .pepe-leg {
+    background: linear-gradient(180deg, #7986CB 0%, #5C6BC0 100%);
+}
+
+.coin-card[data-coin-id="ethereum"] .pepe-fist,
+.coin-card[data-coin-id="ethereum"] .pepe-foot {
+    background: #3949AB;
+}
+
+.coin-card[data-coin-id="solana"] .pepe-head,
+.coin-card[data-coin-id="solana"] .pepe-torso,
+.coin-card[data-coin-id="solana"] .pepe-arm,
+.coin-card[data-coin-id="solana"] .pepe-leg {
+    background: linear-gradient(180deg, #66BB6A 0%, #4CAF50 100%);
+}
+
+.coin-card[data-coin-id="solana"] .pepe-fist,
+.coin-card[data-coin-id="solana"] .pepe-foot {
+    background: #2E7D32;
+}
+
+.coin-card[data-coin-id="dogecoin"] .pepe-head,
+.coin-card[data-coin-id="dogecoin"] .pepe-torso,
+.coin-card[data-coin-id="dogecoin"] .pepe-arm,
+.coin-card[data-coin-id="dogecoin"] .pepe-leg {
+    background: linear-gradient(180deg, #FFD54F 0%, #FFC107 100%);
+}
+
+.coin-card[data-coin-id="dogecoin"] .pepe-fist,
+.coin-card[data-coin-id="dogecoin"] .pepe-foot {
+    background: #FF8F00;
+}
+
+/* Hover animation on coin cards */
+.coin-card:hover .pepe-character {
+    animation: cardPepeExcited 0.5s ease-in-out infinite !important;
+}
+
+@keyframes cardPepeExcited {
+    0%, 100% { transform: scale(0.7) rotate(-5deg); }
+    50% { transform: scale(0.75) rotate(5deg); }
+}
+
+.coin-card.selected .pepe-character {
+    animation: cardPepeSelected 0.6s ease-in-out infinite !important;
+    filter: brightness(1.3) drop-shadow(0 0 15px currentColor);
+}
+
+@keyframes cardPepeSelected {
+    0%, 100% { transform: scale(0.8) rotate(0deg); }
+    25% { transform: scale(0.85) rotate(-10deg); }
+    50% { transform: scale(0.9) rotate(10deg); }
+    75% { transform: scale(0.85) rotate(-10deg); }
+}
