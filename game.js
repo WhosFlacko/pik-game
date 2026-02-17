@@ -35,7 +35,9 @@ let gameState = {
   streak: parseInt(localStorage.getItem('streak') || '0'),
   wins: parseInt(localStorage.getItem('wins') || '0'),
   lastRank: null,
-  soundEnabled: true
+  lastRankings: {},
+  soundEnabled: true,
+  updateCount: 0
 };
 
 // Sound Effects (using Web Audio API for instant playback)
@@ -73,6 +75,101 @@ function playWinSound() {
   playTone(800, 100);
   setTimeout(() => playTone(1000, 100), 100);
   setTimeout(() => playTone(1200, 150), 200);
+}
+
+// Fighting Animation Triggers
+function triggerAttack(coinId, targetId) {
+  const attacker = document.querySelector(`.pepe-fighter[data-coin-id="${coinId}"] .pepe-character`);
+  const target = document.querySelector(`.pepe-fighter[data-coin-id="${targetId}"] .pepe-character`);
+  
+  if (!attacker || !target) return;
+  
+  // Attacker animation
+  attacker.classList.add('attacking');
+  setTimeout(() => attacker.classList.remove('attacking'), 600);
+  
+  // Target gets hit
+  setTimeout(() => {
+    target.classList.add('hit');
+    createImpactEffect(target);
+    setTimeout(() => target.classList.remove('hit'), 400);
+  }, 400);
+}
+
+function triggerJutsu(coinId) {
+  const fighter = document.querySelector(`.pepe-fighter[data-coin-id="${coinId}"] .pepe-character`);
+  if (!fighter) return;
+  
+  fighter.classList.add('jutsu');
+  createEnergyBlast(fighter);
+  setTimeout(() => fighter.classList.remove('jutsu'), 1000);
+}
+
+function createEnergyBlast(fromElement) {
+  const blast = document.createElement('div');
+  blast.className = 'energy-blast';
+  blast.textContent = '💥';
+  
+  const rect = fromElement.getBoundingClientRect();
+  const arena = document.querySelector('.battle-arena');
+  const arenaRect = arena.getBoundingClientRect();
+  
+  blast.style.left = (rect.left - arenaRect.left) + 'px';
+  blast.style.top = (rect.top - arenaRect.top) + 'px';
+  
+  arena.appendChild(blast);
+  setTimeout(() => blast.remove(), 800);
+}
+
+function createImpactEffect(onElement) {
+  const impact = document.createElement('div');
+  impact.className = 'impact';
+  
+  const rect = onElement.getBoundingClientRect();
+  const arena = document.querySelector('.battle-arena');
+  const arenaRect = arena.getBoundingClientRect();
+  
+  impact.style.left = (rect.left - arenaRect.left) + 'px';
+  impact.style.top = (rect.top - arenaRect.top) + 'px';
+  
+  arena.appendChild(impact);
+  
+  // Create particles
+  for (let i = 0; i < 8; i++) {
+    createParticle(rect.left - arenaRect.left, rect.top - arenaRect.top);
+  }
+  
+  setTimeout(() => impact.remove(), 400);
+}
+
+function createParticle(x, y) {
+  const particle = document.createElement('div');
+  particle.className = 'particle';
+  
+  const angle = (Math.random() * 360) * (Math.PI / 180);
+  const distance = 50 + Math.random() * 50;
+  const tx = Math.cos(angle) * distance;
+  const ty = Math.sin(angle) * distance;
+  
+  particle.style.left = x + 'px';
+  particle.style.top = y + 'px';
+  particle.style.setProperty('--tx', tx + 'px');
+  particle.style.setProperty('--ty', ty + 'px');
+  particle.style.background = ['#14F195', '#9945FF', '#FFD700', '#FF007A'][Math.floor(Math.random() * 4)];
+  
+  const arena = document.querySelector('.battle-arena');
+  arena.appendChild(particle);
+  setTimeout(() => particle.remove(), 1000);
+}
+
+function showCombo(text) {
+  const combo = document.createElement('div');
+  combo.className = 'combo-text';
+  combo.textContent = text;
+  
+  const arena = document.querySelector('.battle-arena');
+  arena.appendChild(combo);
+  setTimeout(() => combo.remove(), 1000);
 }
 
 // Initialize
@@ -351,6 +448,7 @@ function renderRaceDisplay() {
     if (isSelected) pepeContainer.classList.add('your-pepe');
     
     pepeContainer.innerHTML = `
+      <div class="power-level">POWER: 9000</div>
       <div class="pepe-character" style="filter: ${coin.filter}">🐸</div>
       <div class="pepe-info">
         <div class="pepe-rank">-</div>
@@ -388,8 +486,25 @@ async function updatePrices() {
     const userRank = changes.findIndex(c => c.coin.id === gameState.selectedCoin.id) + 1;
     if (gameState.lastRank && userRank < gameState.lastRank && userRank <= 3) {
       sounds.takeLead();
+      showCombo('RISING! 📈');
     }
     gameState.lastRank = userRank;
+    
+    // Trigger fighting animations based on rank changes
+    gameState.updateCount++;
+    if (gameState.updateCount % 3 === 0) { // Every 3 seconds
+      // Top coin attacks
+      if (changes.length >= 2) {
+        triggerAttack(changes[0].coin.id, changes[changes.length - 1].coin.id);
+      }
+    }
+    
+    if (gameState.updateCount % 5 === 0) { // Every 5 seconds - JUTSU!
+      if (changes[0].change > 0.5) {
+        triggerJutsu(changes[0].coin.id);
+        showCombo('JUTSU! ⚡');
+      }
+    }
     
     // Update Pepe Battle Display
     changes.forEach((item, index) => {
@@ -404,30 +519,32 @@ async function updatePrices() {
       pepe.querySelector('.pepe-change').textContent = `${item.change >= 0 ? '+' : ''}${item.change.toFixed(3)}%`;
       pepe.querySelector('.pepe-change').style.color = item.change >= 0 ? '#14F195' : '#ff4444';
       
-      // Scale Pepe based on performance (1.0 to 3.0)
-      const maxChange = Math.max(...changes.map(c => Math.abs(c.change)), 0.01);
-      const scale = 1.0 + (Math.abs(item.change) / maxChange) * 2.0; // 1x to 3x size
-      const character = pepe.querySelector('.pepe-character');
-      character.style.transform = `scale(${scale})`;
+      // Power level (based on % change)
+      const powerLevel = Math.floor(9000 + (item.change * 1000));
+      pepe.querySelector('.power-level').textContent = `POWER: ${powerLevel}`;
       
-      // Winner gets MASSIVE
+      const character = pepe.querySelector('.pepe-character');
+      
+      // Winner gets MASSIVE and victory animation
       if (rank === 1 && item.change > 0) {
         character.classList.add('winning');
+        character.classList.remove('losing', 'attacking', 'hit', 'jutsu');
         pepe.classList.add('leader');
       } else {
         character.classList.remove('winning');
         pepe.classList.remove('leader');
       }
       
-      // Loser shrinks
-      if (rank === 4 || item.change < 0) {
+      // Loser shrinks and defeated animation
+      if (rank === 4 || item.change < -0.5) {
         character.classList.add('losing');
+        character.classList.remove('winning', 'attacking', 'hit', 'jutsu');
       } else {
         character.classList.remove('losing');
       }
       
-      // Position in arena based on rank
-      pepe.style.order = rank;
+      // Position in arena based on rank (keep original positions but indicate rank)
+      pepe.style.zIndex = 10 + (4 - rank); // Higher rank = higher z-index
     });
     
     sounds.tick();

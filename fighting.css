@@ -1,0 +1,319 @@
+/* NARUTO-STYLE PEPE FIGHTING ARENA */
+
+.battle-arena {
+    position: relative;
+    width: 100%;
+    min-height: 500px;
+    background: 
+        linear-gradient(135deg, rgba(20, 241, 149, 0.05) 0%, rgba(153, 69, 255, 0.05) 100%),
+        radial-gradient(circle at 50% 50%, rgba(255, 215, 0, 0.1) 0%, transparent 70%);
+    border-radius: 20px;
+    overflow: hidden;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Ground/Platform */
+.battle-arena::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 100px;
+    background: linear-gradient(to top, rgba(20, 241, 149, 0.2), transparent);
+    pointer-events: none;
+}
+
+/* Fighting Background Effects */
+.battle-arena::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        repeating-linear-gradient(90deg, transparent 0px, rgba(255,255,255,0.02) 1px, transparent 2px, transparent 50px),
+        repeating-linear-gradient(0deg, transparent 0px, rgba(255,255,255,0.02) 1px, transparent 2px, transparent 50px);
+    pointer-events: none;
+    animation: gridMove 20s linear infinite;
+}
+
+@keyframes gridMove {
+    0% { transform: translate(0, 0); }
+    100% { transform: translate(50px, 50px); }
+}
+
+/* PEPE FIGHTER */
+.pepe-fighter {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: all 0.3s ease;
+    z-index: 10;
+}
+
+/* Position fighters */
+.pepe-fighter:nth-child(1) {
+    bottom: 100px;
+    left: 10%;
+}
+
+.pepe-fighter:nth-child(2) {
+    bottom: 100px;
+    right: 10%;
+}
+
+.pepe-fighter:nth-child(3) {
+    bottom: 50px;
+    left: 30%;
+}
+
+.pepe-fighter:nth-child(4) {
+    bottom: 50px;
+    right: 30%;
+}
+
+/* Your selected Pepe */
+.pepe-fighter.your-pepe {
+    filter: drop-shadow(0 0 20px var(--solana-green));
+}
+
+.pepe-fighter.your-pepe .pepe-character {
+    border: 3px solid var(--solana-green);
+    border-radius: 50%;
+    padding: 10px;
+    background: radial-gradient(circle, rgba(20, 241, 149, 0.2), transparent);
+}
+
+/* PEPE CHARACTER */
+.pepe-character {
+    font-size: 4rem;
+    position: relative;
+    animation: fighterStance 2s ease-in-out infinite;
+    transition: transform 0.3s ease;
+}
+
+@keyframes fighterStance {
+    0%, 100% { transform: translateY(0) rotate(-3deg); }
+    50% { transform: translateY(-8px) rotate(3deg); }
+}
+
+/* ATTACKING ANIMATIONS */
+.pepe-character.attacking {
+    animation: attack 0.6s ease-in-out;
+}
+
+@keyframes attack {
+    0% { transform: translateX(0) scale(1) rotate(0deg); }
+    30% { transform: translateX(30px) scale(1.2) rotate(15deg); }
+    50% { transform: translateX(40px) scale(1.3) rotate(20deg); }
+    70% { transform: translateX(30px) scale(1.2) rotate(15deg); }
+    100% { transform: translateX(0) scale(1) rotate(0deg); }
+}
+
+/* JUTSU/SPECIAL ATTACK */
+.pepe-character.jutsu {
+    animation: jutsuAttack 1s ease-in-out;
+}
+
+@keyframes jutsuAttack {
+    0% { transform: scale(1) rotate(0deg); }
+    20% { transform: scale(0.8) rotate(-45deg); }
+    40% { transform: scale(1.5) rotate(45deg); }
+    60% { transform: scale(1.3) rotate(180deg); }
+    80% { transform: scale(1.4) rotate(360deg); }
+    100% { transform: scale(1) rotate(720deg); }
+}
+
+/* GETTING HIT */
+.pepe-character.hit {
+    animation: takeHit 0.4s ease-in-out;
+}
+
+@keyframes takeHit {
+    0% { transform: translateX(0) scale(1); }
+    25% { transform: translateX(-20px) scale(0.9) rotate(-10deg); }
+    50% { transform: translateX(-30px) scale(0.85) rotate(-15deg); filter: brightness(0.5); }
+    75% { transform: translateX(-20px) scale(0.9) rotate(-10deg); }
+    100% { transform: translateX(0) scale(1) rotate(0deg); }
+}
+
+/* WINNING PEPE */
+.pepe-character.winning {
+    animation: victoryDance 1s ease-in-out infinite;
+    filter: brightness(1.5) drop-shadow(0 0 30px gold) drop-shadow(0 0 50px gold);
+}
+
+@keyframes victoryDance {
+    0%, 100% { transform: scale(1.5) rotate(-10deg) translateY(0); }
+    25% { transform: scale(1.6) rotate(10deg) translateY(-20px); }
+    50% { transform: scale(1.7) rotate(-10deg) translateY(-30px); }
+    75% { transform: scale(1.6) rotate(10deg) translateY(-20px); }
+}
+
+/* LOSING PEPE */
+.pepe-character.losing {
+    animation: defeated 2s ease-in-out infinite;
+    filter: grayscale(0.8) brightness(0.5) blur(1px);
+    opacity: 0.5;
+}
+
+@keyframes defeated {
+    0%, 100% { transform: scale(0.6) rotate(-20deg) translateY(10px); }
+    50% { transform: scale(0.5) rotate(20deg) translateY(15px); }
+}
+
+/* ENERGY BLAST PROJECTILE */
+.energy-blast {
+    position: absolute;
+    font-size: 2rem;
+    animation: blastMove 0.8s linear;
+    pointer-events: none;
+    z-index: 20;
+}
+
+@keyframes blastMove {
+    0% { transform: translateX(0) scale(0.5) rotate(0deg); opacity: 1; }
+    50% { transform: translateX(150px) scale(1) rotate(180deg); opacity: 1; }
+    100% { transform: translateX(300px) scale(1.5) rotate(360deg); opacity: 0; }
+}
+
+/* IMPACT EFFECT */
+.impact {
+    position: absolute;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255, 215, 0, 0.8), transparent);
+    animation: impactExplosion 0.4s ease-out;
+    pointer-events: none;
+    z-index: 25;
+}
+
+@keyframes impactExplosion {
+    0% { transform: scale(0); opacity: 1; }
+    50% { transform: scale(1.5); opacity: 0.8; }
+    100% { transform: scale(3); opacity: 0; }
+}
+
+/* PARTICLE EFFECTS */
+.particle {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    pointer-events: none;
+    animation: particleFly 1s ease-out;
+    z-index: 15;
+}
+
+@keyframes particleFly {
+    0% { transform: translate(0, 0) scale(1); opacity: 1; }
+    100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; }
+}
+
+/* PEPE INFO DISPLAY */
+.pepe-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
+    margin-top: 0.5rem;
+    background: rgba(0, 0, 0, 0.6);
+    padding: 0.5rem 0.8rem;
+    border-radius: 10px;
+    backdrop-filter: blur(10px);
+}
+
+.pepe-rank {
+    font-size: 1.5rem;
+}
+
+.pepe-name {
+    font-size: 0.9rem;
+    font-weight: 800;
+    letter-spacing: 1px;
+}
+
+.pepe-change {
+    font-size: 0.85rem;
+    font-weight: 700;
+    padding: 0.2rem 0.5rem;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 6px;
+}
+
+/* POWER LEVEL INDICATOR */
+.power-level {
+    position: absolute;
+    top: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.7rem;
+    font-weight: 800;
+    color: var(--solana-green);
+    white-space: nowrap;
+    animation: powerPulse 1s ease-in-out infinite;
+}
+
+@keyframes powerPulse {
+    0%, 100% { transform: translateX(-50%) scale(1); }
+    50% { transform: translateX(-50%) scale(1.2); }
+}
+
+/* LEADER AURA */
+.pepe-fighter.leader::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 150%;
+    height: 150%;
+    background: radial-gradient(circle, rgba(255, 215, 0, 0.3), transparent 70%);
+    border-radius: 50%;
+    animation: auraExpand 2s ease-in-out infinite;
+    z-index: -1;
+}
+
+@keyframes auraExpand {
+    0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.5; }
+    50% { transform: translate(-50%, -50%) scale(1.3); opacity: 0.8; }
+}
+
+/* COMBO COUNTER */
+.combo-text {
+    position: absolute;
+    top: 20%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 3rem;
+    font-weight: 900;
+    color: #FFD700;
+    text-shadow: 
+        0 0 10px rgba(255, 215, 0, 0.8),
+        0 0 20px rgba(255, 215, 0, 0.6),
+        0 0 30px rgba(255, 215, 0, 0.4);
+    animation: comboAppear 1s ease-out;
+    pointer-events: none;
+    z-index: 30;
+}
+
+@keyframes comboAppear {
+    0% { transform: translate(-50%, -50%) scale(0) rotate(-180deg); opacity: 0; }
+    50% { transform: translate(-50%, -50%) scale(1.5) rotate(10deg); opacity: 1; }
+    100% { transform: translate(-50%, -50%) scale(1) rotate(0deg); opacity: 0; }
+}
+
+/* Mobile Responsive */
+@media (max-width: 480px) {
+    .pepe-character {
+        font-size: 3rem;
+    }
+    
+    .battle-arena {
+        min-height: 400px;
+    }
+}
