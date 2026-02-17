@@ -1,4 +1,4 @@
-// CoinPick Game Logic
+// CoinPick Game Logic — DOPAMINE EDITION 🎰
 
 // Game State
 let gameState = {
@@ -8,18 +8,13 @@ let gameState = {
     coins: [],
     startPrices: {},
     currentPrices: {},
+    previousPrices: {},
     timerInterval: null,
     priceInterval: null,
     remainingSeconds: 0,
-    stats: {
-        wins: 0,
-        losses: 0,
-        streak: 0,
-        bestStreak: 0
-    }
+    stats: { wins: 0, losses: 0, streak: 0, bestStreak: 0 }
 };
 
-// Coin configurations
 const COIN_CONFIG = [
     { id: 'solana', symbol: 'SOL', name: 'Solana', emoji: '⚡' },
     { id: 'bitcoin', symbol: 'BTC', name: 'Bitcoin', emoji: '₿' },
@@ -29,22 +24,175 @@ const COIN_CONFIG = [
     { id: 'dogwifcoin', symbol: 'WIF', name: 'dogwifhat', emoji: '🐕' }
 ];
 
-// API - using CoinGecko with retry and rate limit handling
 const API_BASE = 'https://api.coingecko.com/api/v3';
 let lastApiCall = 0;
-const API_COOLDOWN = 6000; // 6 seconds between calls (free tier = ~10/min)
+const API_COOLDOWN = 6000;
+
+// ============ DOPAMINE SYSTEMS ============
+
+// Sound effects using Web Audio API
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+function playSound(type) {
+    try {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        
+        switch(type) {
+            case 'select':
+                osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.1);
+                gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.15);
+                break;
+            case 'tick':
+                osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.05);
+                break;
+            case 'urgent':
+                osc.frequency.setValueAtTime(900, audioCtx.currentTime);
+                osc.frequency.setValueAtTime(700, audioCtx.currentTime + 0.1);
+                gain.gain.setValueAtTime(0.12, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.2);
+                break;
+            case 'win':
+                // Victory fanfare
+                [0, 0.1, 0.2, 0.3, 0.4].forEach((t, i) => {
+                    const o = audioCtx.createOscillator();
+                    const g = audioCtx.createGain();
+                    o.connect(g); g.connect(audioCtx.destination);
+                    o.frequency.setValueAtTime([523, 659, 784, 1047, 1319][i], audioCtx.currentTime + t);
+                    g.gain.setValueAtTime(0.12, audioCtx.currentTime + t);
+                    g.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + t + 0.2);
+                    o.start(audioCtx.currentTime + t);
+                    o.stop(audioCtx.currentTime + t + 0.2);
+                });
+                return;
+            case 'lose':
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(400, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(150, audioCtx.currentTime + 0.4);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.4);
+                break;
+            case 'countdown':
+                osc.frequency.setValueAtTime(1000, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+                break;
+            case 'priceUp':
+                osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(900, audioCtx.currentTime + 0.08);
+                gain.gain.setValueAtTime(0.06, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+                break;
+            case 'priceDown':
+                osc.frequency.setValueAtTime(500, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(300, audioCtx.currentTime + 0.08);
+                gain.gain.setValueAtTime(0.06, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.08);
+                break;
+        }
+    } catch(e) {}
+}
+
+// Haptic feedback
+function vibrate(pattern) {
+    if (navigator.vibrate) navigator.vibrate(pattern);
+}
+
+// Confetti
+function launchConfetti() {
+    const canvas = document.getElementById('confetti');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    
+    const particles = [];
+    const colors = ['#14F195', '#9945FF', '#FFD700', '#FF6600', '#00ff88', '#ff4444', '#ffffff'];
+    
+    for (let i = 0; i < 150; i++) {
+        particles.push({
+            x: Math.random() * canvas.width,
+            y: -20 - Math.random() * 200,
+            w: Math.random() * 10 + 5,
+            h: Math.random() * 6 + 3,
+            color: colors[Math.floor(Math.random() * colors.length)],
+            vx: (Math.random() - 0.5) * 8,
+            vy: Math.random() * 4 + 2,
+            rotation: Math.random() * 360,
+            rotSpeed: (Math.random() - 0.5) * 10,
+            opacity: 1
+        });
+    }
+    
+    let frame = 0;
+    function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        particles.forEach(p => {
+            p.x += p.vx;
+            p.y += p.vy;
+            p.vy += 0.1;
+            p.rotation += p.rotSpeed;
+            p.opacity -= 0.005;
+            
+            if (p.opacity <= 0) return;
+            
+            ctx.save();
+            ctx.translate(p.x, p.y);
+            ctx.rotate(p.rotation * Math.PI / 180);
+            ctx.globalAlpha = p.opacity;
+            ctx.fillStyle = p.color;
+            ctx.fillRect(-p.w/2, -p.h/2, p.w, p.h);
+            ctx.restore();
+        });
+        
+        frame++;
+        if (frame < 180) requestAnimationFrame(animate);
+        else ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+    animate();
+}
+
+// Screen shake
+function screenShake() {
+    document.getElementById('app').classList.add('screen-shake');
+    setTimeout(() => document.getElementById('app').classList.remove('screen-shake'), 400);
+}
+
+// Number counter animation
+function animateNumber(el, from, to, duration = 1000, suffix = '%') {
+    const start = performance.now();
+    function update(now) {
+        const progress = Math.min((now - start) / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3); // easeOutCubic
+        const current = from + (to - from) * eased;
+        el.textContent = `${current >= 0 ? '+' : ''}${current.toFixed(4)}${suffix}`;
+        if (progress < 1) requestAnimationFrame(update);
+    }
+    requestAnimationFrame(update);
+}
+
+// ============ API ============
 
 async function fetchWithRateLimit(url) {
     const now = Date.now();
-    const timeSinceLastCall = now - lastApiCall;
-    if (timeSinceLastCall < API_COOLDOWN) {
-        await new Promise(r => setTimeout(r, API_COOLDOWN - timeSinceLastCall));
-    }
+    const wait = API_COOLDOWN - (now - lastApiCall);
+    if (wait > 0) await new Promise(r => setTimeout(r, wait));
     lastApiCall = Date.now();
-    
     const response = await fetch(url);
     if (response.status === 429) {
-        // Rate limited — wait and retry once
         await new Promise(r => setTimeout(r, 10000));
         lastApiCall = Date.now();
         return await fetch(url);
@@ -52,19 +200,28 @@ async function fetchWithRateLimit(url) {
     return response;
 }
 
-// DOM Elements
+// ============ DOM ============
+
 const modeSelect = document.getElementById('modeSelect');
 const gameActive = document.getElementById('gameActive');
-const results = document.getElementById('results');
-const leaderboard = document.getElementById('leaderboard');
+const resultsEl = document.getElementById('results');
+const leaderboardEl = document.getElementById('leaderboard');
 const coinGrid = document.getElementById('coinGrid');
 const timerDisplay = document.getElementById('timer');
 const progressFill = document.getElementById('progressFill');
 const streakDisplay = document.getElementById('streak');
 const winsDisplay = document.getElementById('wins');
 
-// Initialize
+// ============ INIT ============
+
 document.addEventListener('DOMContentLoaded', () => {
+    // Add confetti canvas
+    if (!document.getElementById('confetti')) {
+        const c = document.createElement('canvas');
+        c.id = 'confetti';
+        document.body.appendChild(c);
+    }
+    
     loadStats();
     setupEventListeners();
     updateStatsDisplay();
@@ -76,41 +233,48 @@ function setupEventListeners() {
             document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
             e.target.classList.add('active');
             gameState.timeframe = parseInt(e.target.dataset.minutes);
+            playSound('select');
+            vibrate(10);
         });
     });
 
     document.getElementById('startGame').addEventListener('click', startGame);
     document.getElementById('cancelGame').addEventListener('click', cancelGame);
-    document.getElementById('playAgain').addEventListener('click', () => showScreen('select'));
-    document.getElementById('viewLeaderboard').addEventListener('click', showLeaderboard);
-    document.getElementById('backToGame').addEventListener('click', () => showScreen('select'));
+    document.getElementById('playAgain').addEventListener('click', () => {
+        playSound('select');
+        showScreen('select');
+    });
+    document.getElementById('viewLeaderboard').addEventListener('click', () => {
+        playSound('select');
+        showLeaderboard();
+    });
+    document.getElementById('backToGame').addEventListener('click', () => {
+        playSound('select');
+        showScreen('select');
+    });
 }
 
 function showScreen(screen) {
-    modeSelect.classList.add('hidden');
-    gameActive.classList.add('hidden');
-    results.classList.add('hidden');
-    leaderboard.classList.add('hidden');
-
-    const el = { select: modeSelect, active: gameActive, results: results, leaderboard: leaderboard }[screen];
-    if (el) el.classList.remove('hidden');
+    [modeSelect, gameActive, resultsEl, leaderboardEl].forEach(el => el.classList.add('hidden'));
+    const map = { select: modeSelect, active: gameActive, results: resultsEl, leaderboard: leaderboardEl };
+    if (map[screen]) map[screen].classList.remove('hidden');
     gameState.mode = screen;
 }
 
+// ============ GAME FLOW ============
+
 async function startGame() {
-    // Show loading state
     const startBtn = document.getElementById('startGame');
-    startBtn.textContent = 'Loading prices...';
+    startBtn.textContent = '⏳ Loading...';
     startBtn.disabled = true;
 
-    // Select 4 random coins
     const shuffled = [...COIN_CONFIG].sort(() => Math.random() - 0.5);
     gameState.coins = shuffled.slice(0, 4);
     gameState.selectedCoin = null;
     gameState.startPrices = {};
     gameState.currentPrices = {};
+    gameState.previousPrices = {};
 
-    // Fetch starting prices
     const success = await fetchStartPrices();
     
     startBtn.textContent = 'Start Game';
@@ -121,29 +285,24 @@ async function startGame() {
         return;
     }
 
+    // Resume audio context (mobile requires user interaction)
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+
+    playSound('select');
+    vibrate(50);
     showScreen('active');
     renderCoins();
 
-    // Start timer
     gameState.remainingSeconds = gameState.timeframe * 60;
     startTimer();
-
-    // Start price updates (every 15 seconds to stay within rate limits)
     gameState.priceInterval = setInterval(updateLivePrices, 15000);
 }
 
 async function fetchStartPrices() {
     const ids = gameState.coins.map(c => c.id).join(',');
     try {
-        const response = await fetchWithRateLimit(
-            `${API_BASE}/simple/price?ids=${ids}&vs_currencies=usd&include_24hr_change=true`
-        );
-        
-        if (!response.ok) {
-            console.error('API error:', response.status);
-            return false;
-        }
-
+        const response = await fetchWithRateLimit(`${API_BASE}/simple/price?ids=${ids}&vs_currencies=usd`);
+        if (!response.ok) return false;
         const data = await response.json();
         
         let allGood = true;
@@ -151,35 +310,31 @@ async function fetchStartPrices() {
             if (data[coin.id] && data[coin.id].usd) {
                 gameState.startPrices[coin.id] = data[coin.id].usd;
                 gameState.currentPrices[coin.id] = data[coin.id].usd;
+                gameState.previousPrices[coin.id] = data[coin.id].usd;
             } else {
                 allGood = false;
             }
         });
-
         return allGood;
-    } catch (error) {
-        console.error('Error fetching prices:', error);
+    } catch (e) {
+        console.error('Fetch error:', e);
         return false;
     }
 }
 
 function renderCoins() {
     coinGrid.innerHTML = '';
-    
-    gameState.coins.forEach(coin => {
+    gameState.coins.forEach((coin, i) => {
         const price = gameState.startPrices[coin.id];
         const card = document.createElement('div');
         card.className = 'coin-card';
         card.dataset.coinId = coin.id;
-        
-        // Format price based on value
-        const priceStr = formatPrice(price);
-        
+        card.style.animation = `fadeInUp 0.3s ${i * 0.1}s both`;
         card.innerHTML = `
             <div class="coin-symbol">${coin.emoji}</div>
             <div class="coin-name">${coin.symbol}</div>
-            <div class="coin-price">${priceStr}</div>
-            <div class="coin-change" style="color: var(--text-secondary)">0.00%</div>
+            <div class="coin-price">${formatPrice(price)}</div>
+            <div class="coin-change" style="color: var(--text-secondary)">0.0000%</div>
         `;
         card.addEventListener('click', () => selectCoin(coin.id));
         coinGrid.appendChild(card);
@@ -187,7 +342,7 @@ function renderCoins() {
 }
 
 function formatPrice(price) {
-    if (price >= 1000) return '$' + price.toFixed(2);
+    if (price >= 1000) return '$' + price.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
     if (price >= 1) return '$' + price.toFixed(2);
     if (price >= 0.01) return '$' + price.toFixed(4);
     if (price >= 0.0001) return '$' + price.toFixed(6);
@@ -195,15 +350,14 @@ function formatPrice(price) {
 }
 
 function selectCoin(coinId) {
-    if (gameState.selectedCoin === coinId) {
-        gameState.selectedCoin = null;
-    } else {
-        gameState.selectedCoin = coinId;
-    }
+    gameState.selectedCoin = gameState.selectedCoin === coinId ? null : coinId;
     
     document.querySelectorAll('.coin-card').forEach(card => {
         card.classList.toggle('selected', card.dataset.coinId === gameState.selectedCoin);
     });
+    
+    playSound('select');
+    vibrate(15);
 }
 
 function startTimer() {
@@ -219,6 +373,25 @@ function startTimer() {
         const progress = (gameState.remainingSeconds / totalSeconds) * 100;
         progressFill.style.width = `${progress}%`;
         
+        // Urgent mode (last 30 seconds)
+        if (gameState.remainingSeconds <= 30 && gameState.remainingSeconds > 10) {
+            timerDisplay.className = 'timer urgent';
+            if (gameState.remainingSeconds % 5 === 0) playSound('tick');
+        }
+        
+        // Critical mode (last 10 seconds)
+        if (gameState.remainingSeconds <= 10) {
+            timerDisplay.className = 'timer critical';
+            playSound('countdown');
+            vibrate(30);
+        }
+        
+        // Final 3 seconds — big countdown
+        if (gameState.remainingSeconds <= 3 && gameState.remainingSeconds > 0) {
+            screenShake();
+            vibrate(100);
+        }
+        
         if (gameState.remainingSeconds <= 0) {
             endGame();
         }
@@ -228,32 +401,41 @@ function startTimer() {
 async function updateLivePrices() {
     const ids = gameState.coins.map(c => c.id).join(',');
     try {
-        const response = await fetchWithRateLimit(
-            `${API_BASE}/simple/price?ids=${ids}&vs_currencies=usd`
-        );
-        
+        const response = await fetchWithRateLimit(`${API_BASE}/simple/price?ids=${ids}&vs_currencies=usd`);
         if (!response.ok) return;
-        
         const data = await response.json();
         
         gameState.coins.forEach(coin => {
-            if (data[coin.id] && data[coin.id].usd) {
-                const currentPrice = data[coin.id].usd;
-                gameState.currentPrices[coin.id] = currentPrice;
-                const startPrice = gameState.startPrices[coin.id];
-                const change = ((currentPrice - startPrice) / startPrice) * 100;
+            if (!data[coin.id] || !data[coin.id].usd) return;
+            
+            const currentPrice = data[coin.id].usd;
+            const previousPrice = gameState.currentPrices[coin.id];
+            gameState.previousPrices[coin.id] = previousPrice;
+            gameState.currentPrices[coin.id] = currentPrice;
+            
+            const startPrice = gameState.startPrices[coin.id];
+            const change = ((currentPrice - startPrice) / startPrice) * 100;
+            const priceDirection = currentPrice > previousPrice ? 'up' : currentPrice < previousPrice ? 'down' : 'same';
+            
+            const card = document.querySelector(`.coin-card[data-coin-id="${coin.id}"]`);
+            if (!card) return;
+            
+            card.querySelector('.coin-price').textContent = formatPrice(currentPrice);
+            const changeEl = card.querySelector('.coin-change');
+            changeEl.textContent = `${change >= 0 ? '+' : ''}${change.toFixed(4)}%`;
+            changeEl.className = `coin-change ${change >= 0 ? 'positive' : 'negative'}`;
+            
+            // Flash animation on price change
+            if (priceDirection !== 'same') {
+                changeEl.classList.add(priceDirection === 'up' ? 'flash-green' : 'flash-red');
+                setTimeout(() => changeEl.classList.remove('flash-green', 'flash-red'), 400);
                 
-                const card = document.querySelector(`.coin-card[data-coin-id="${coin.id}"]`);
-                if (card) {
-                    card.querySelector('.coin-price').textContent = formatPrice(currentPrice);
-                    const changeEl = card.querySelector('.coin-change');
-                    changeEl.textContent = `${change >= 0 ? '+' : ''}${change.toFixed(4)}%`;
-                    changeEl.className = `coin-change ${change >= 0 ? 'positive' : 'negative'}`;
-                }
+                if (priceDirection === 'up') playSound('priceUp');
+                else playSound('priceDown');
             }
         });
-    } catch (error) {
-        console.error('Error updating prices:', error);
+    } catch (e) {
+        console.error('Price update error:', e);
     }
 }
 
@@ -261,12 +443,10 @@ async function endGame() {
     clearInterval(gameState.timerInterval);
     clearInterval(gameState.priceInterval);
     
-    // Fetch final prices
+    // Final price fetch
     const ids = gameState.coins.map(c => c.id).join(',');
     try {
-        const response = await fetchWithRateLimit(
-            `${API_BASE}/simple/price?ids=${ids}&vs_currencies=usd`
-        );
+        const response = await fetchWithRateLimit(`${API_BASE}/simple/price?ids=${ids}&vs_currencies=usd`);
         if (response.ok) {
             const data = await response.json();
             gameState.coins.forEach(coin => {
@@ -275,11 +455,8 @@ async function endGame() {
                 }
             });
         }
-    } catch (e) {
-        console.error('Error fetching final prices:', e);
-    }
+    } catch (e) {}
     
-    // Calculate real % changes
     const changes = gameState.coins.map(coin => {
         const startPrice = gameState.startPrices[coin.id];
         const endPrice = gameState.currentPrices[coin.id];
@@ -287,14 +464,10 @@ async function endGame() {
         return { coin, change, startPrice, endPrice };
     });
     
-    // Find winner (biggest % gain)
     const winner = changes.reduce((max, curr) => curr.change > max.change ? curr : max, changes[0]);
-    
-    // Check if user picked correctly
     const userWon = gameState.selectedCoin && gameState.selectedCoin === winner.coin.id;
     const noPick = !gameState.selectedCoin;
     
-    // Update stats (only if they made a pick)
     if (!noPick) {
         if (userWon) {
             gameState.stats.wins++;
@@ -319,40 +492,72 @@ function showResults(won, noPick, winner, changes) {
     
     if (noPick) {
         resultIcon.textContent = '🤷';
+        resultIcon.className = 'result-icon lose';
         resultText.textContent = "You Didn't Pick!";
+        resultText.className = 'result-text';
         resultText.style.color = 'var(--text-secondary)';
     } else if (won) {
+        // 🎉 WIN CELEBRATION
         resultIcon.textContent = '🎉';
-        resultText.textContent = 'You Won!';
-        resultText.style.color = 'var(--success)';
+        resultIcon.className = 'result-icon win';
+        resultText.textContent = 'YOU WON!';
+        resultText.className = 'result-text win';
+        
+        playSound('win');
+        vibrate([100, 50, 100, 50, 200]);
+        launchConfetti();
+        screenShake();
+        
+        // Show streak if > 1
+        const streakEl = document.querySelector('.result-streak') || createStreakEl();
+        if (gameState.stats.streak > 1) {
+            streakEl.textContent = `🔥 ${gameState.stats.streak} WIN STREAK!`;
+            streakEl.classList.remove('hidden');
+        } else {
+            streakEl.classList.add('hidden');
+        }
     } else {
-        resultIcon.textContent = '😢';
-        resultText.textContent = 'Better Luck Next Time';
+        // 😢 LOSS
+        resultIcon.textContent = '💀';
+        resultIcon.className = 'result-icon lose';
+        resultText.textContent = 'Not This Time...';
+        resultText.className = 'result-text';
         resultText.style.color = 'var(--error)';
+        
+        playSound('lose');
+        vibrate(200);
+        screenShake();
     }
     
     const winningCoin = document.getElementById('winningCoin');
     winningCoin.innerHTML = `
-        <strong>${winner.coin.emoji} ${winner.coin.symbol}</strong> had the biggest gain at 
+        <strong>${winner.coin.emoji} ${winner.coin.symbol}</strong> won with 
         <strong style="color: var(--success)">${winner.change >= 0 ? '+' : ''}${winner.change.toFixed(4)}%</strong>
     `;
     
     const priceChanges = document.getElementById('priceChanges');
     priceChanges.innerHTML = changes
         .sort((a, b) => b.change - a.change)
-        .map(({ coin, change, startPrice, endPrice }) => `
-            <div class="price-change-item">
+        .map(({ coin, change, startPrice, endPrice }, i) => `
+            <div class="price-change-item" style="animation: fadeInUp 0.3s ${i * 0.1}s both">
                 <span>${coin.emoji} ${coin.symbol}</span>
-                <span style="color: var(--text-secondary); font-size: 0.8rem;">
+                <span style="color: var(--text-secondary); font-size: 0.75rem;">
                     ${formatPrice(startPrice)} → ${formatPrice(endPrice)}
                 </span>
-                <span class="${change >= 0 ? 'positive' : 'negative'}">
+                <span class="${change >= 0 ? 'positive' : 'negative'}" style="font-weight: 700">
                     ${change >= 0 ? '+' : ''}${change.toFixed(4)}%
                 </span>
             </div>
         `).join('');
     
     showScreen('results');
+}
+
+function createStreakEl() {
+    const el = document.createElement('div');
+    el.className = 'result-streak';
+    document.getElementById('resultText').after(el);
+    return el;
 }
 
 function cancelGame() {
@@ -362,59 +567,38 @@ function cancelGame() {
 }
 
 function showLeaderboard() {
-    const leaderboardList = document.getElementById('leaderboardList');
-    const totalGames = gameState.stats.wins + gameState.stats.losses;
-    const winRate = totalGames > 0 ? ((gameState.stats.wins / totalGames) * 100).toFixed(1) : '0.0';
+    const list = document.getElementById('leaderboardList');
+    const total = gameState.stats.wins + gameState.stats.losses;
+    const rate = total > 0 ? ((gameState.stats.wins / total) * 100).toFixed(1) : '0.0';
     
-    leaderboardList.innerHTML = `
-        <div class="leaderboard-item">
-            <div class="leaderboard-rank">🏆</div>
-            <div class="leaderboard-name">Total Wins</div>
-            <div class="leaderboard-score">${gameState.stats.wins}</div>
-        </div>
-        <div class="leaderboard-item">
-            <div class="leaderboard-rank">❌</div>
-            <div class="leaderboard-name">Total Losses</div>
-            <div class="leaderboard-score">${gameState.stats.losses}</div>
-        </div>
-        <div class="leaderboard-item">
-            <div class="leaderboard-rank">🔥</div>
-            <div class="leaderboard-name">Current Streak</div>
-            <div class="leaderboard-score">${gameState.stats.streak}</div>
-        </div>
-        <div class="leaderboard-item">
-            <div class="leaderboard-rank">⭐</div>
-            <div class="leaderboard-name">Best Streak</div>
-            <div class="leaderboard-score">${gameState.stats.bestStreak}</div>
-        </div>
-        <div class="leaderboard-item">
-            <div class="leaderboard-rank">📊</div>
-            <div class="leaderboard-name">Win Rate</div>
-            <div class="leaderboard-score">${winRate}%</div>
-        </div>
-        <div class="leaderboard-item">
-            <div class="leaderboard-rank">🎮</div>
-            <div class="leaderboard-name">Games Played</div>
-            <div class="leaderboard-score">${totalGames}</div>
-        </div>
+    list.innerHTML = `
+        <div class="leaderboard-item"><div class="leaderboard-rank">🏆</div><div class="leaderboard-name">Total Wins</div><div class="leaderboard-score">${gameState.stats.wins}</div></div>
+        <div class="leaderboard-item"><div class="leaderboard-rank">❌</div><div class="leaderboard-name">Total Losses</div><div class="leaderboard-score">${gameState.stats.losses}</div></div>
+        <div class="leaderboard-item"><div class="leaderboard-rank">🔥</div><div class="leaderboard-name">Current Streak</div><div class="leaderboard-score">${gameState.stats.streak}</div></div>
+        <div class="leaderboard-item"><div class="leaderboard-rank">⭐</div><div class="leaderboard-name">Best Streak</div><div class="leaderboard-score">${gameState.stats.bestStreak}</div></div>
+        <div class="leaderboard-item"><div class="leaderboard-rank">📊</div><div class="leaderboard-name">Win Rate</div><div class="leaderboard-score">${rate}%</div></div>
+        <div class="leaderboard-item"><div class="leaderboard-rank">🎮</div><div class="leaderboard-name">Games Played</div><div class="leaderboard-score">${total}</div></div>
     `;
-    
     showScreen('leaderboard');
-}
-
-// Stats management
-function loadStats() {
-    const saved = localStorage.getItem('coinpick_stats');
-    if (saved) {
-        gameState.stats = JSON.parse(saved);
-    }
-}
-
-function saveStats() {
-    localStorage.setItem('coinpick_stats', JSON.stringify(gameState.stats));
 }
 
 function updateStatsDisplay() {
     streakDisplay.textContent = gameState.stats.streak;
     winsDisplay.textContent = gameState.stats.wins;
+    
+    const streakEl = document.querySelector('.streak');
+    if (gameState.stats.streak >= 3) {
+        streakEl.classList.add('on-fire');
+    } else {
+        streakEl.classList.remove('on-fire');
+    }
+}
+
+function loadStats() {
+    const saved = localStorage.getItem('coinpick_stats');
+    if (saved) gameState.stats = JSON.parse(saved);
+}
+
+function saveStats() {
+    localStorage.setItem('coinpick_stats', JSON.stringify(gameState.stats));
 }
