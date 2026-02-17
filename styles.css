@@ -1054,3 +1054,50 @@ header {
     -webkit-text-fill-color: transparent;
     background-clip: text;
 }
+
+/* Coin Grid */
+.coin-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+}
+
+.coin-card {
+    padding: 1.5rem 1rem;
+    background: var(--card-bg);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-align: center;
+}
+
+.coin-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--solana-green);
+    box-shadow: 0 4px 20px rgba(20, 241, 149, 0.3);
+}
+
+.coin-card.selected {
+    background: linear-gradient(135deg, rgba(20, 241, 149, 0.2), rgba(153, 69, 255, 0.2));
+    border-color: var(--solana-green);
+    box-shadow: 0 0 30px rgba(20, 241, 149, 0.5);
+    animation: selectedGlow 1s ease-in-out infinite;
+}
+
+@keyframes selectedGlow {
+    0%, 100% { box-shadow: 0 0 30px rgba(20, 241, 149, 0.5); }
+    50% { box-shadow: 0 0 40px rgba(20, 241, 149, 0.7); }
+}
+
+.coin-symbol {
+    font-size: 1.8rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+}
+
+.coin-name {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}

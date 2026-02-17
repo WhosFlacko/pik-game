@@ -65,7 +65,7 @@ function setupModeSelection() {
     gameState.mode = 'free';
     freeBtn.classList.add('active');
     solBtn.classList.remove('active');
-    showScreen('timeframe-screen');
+    showScreen('timeframe-selection-screen');
   });
 
   solBtn.addEventListener('click', async () => {
@@ -77,7 +77,7 @@ function setupModeSelection() {
     gameState.mode = 'sol';
     solBtn.classList.add('active');
     freeBtn.classList.remove('active');
-    showScreen('timeframe-screen');
+    showScreen('timeframe-selection-screen');
   });
 }
 
@@ -121,7 +121,12 @@ function setupTimeframeSelection() {
 
 // Coin Grid Rendering
 function setupCoinGrid() {
+  // Will be called when screen is shown
+}
+
+function renderCoinGrid() {
   const grid = document.getElementById('coin-grid');
+  grid.innerHTML = ''; // Clear previous
   
   CONFIG.COINS.forEach(coin => {
     const card = document.createElement('div');
@@ -141,11 +146,6 @@ function setupCoinGrid() {
     
     grid.appendChild(card);
   });
-}
-
-function renderCoinGrid() {
-  // Grid already rendered in setupCoinGrid
-  // This function can be used to update state/highlighting
 }
 
 // Coin Selection (First tap locks)
