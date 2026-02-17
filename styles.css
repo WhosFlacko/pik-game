@@ -46,14 +46,15 @@ body::before {
     100% { opacity: 1; }
 }
 
-#app {
-    max-width: 480px;
+body > * {
+    max-width: 600px;
     margin: 0 auto;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    position: relative;
-    z-index: 1;
+}
+
+@media (min-width: 768px) {
+    body > * {
+        max-width: 480px;
+    }
 }
 
 /* Confetti Canvas */

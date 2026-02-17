@@ -39,8 +39,47 @@ let gameState = {
   isLocked: false,
   wallet: null,
   streak: parseInt(localStorage.getItem('streak') || '0'),
-  wins: parseInt(localStorage.getItem('wins') || '0')
+  wins: parseInt(localStorage.getItem('wins') || '0'),
+  lastRank: null,
+  soundEnabled: true
 };
+
+// Sound Effects (using Web Audio API for instant playback)
+const sounds = {
+  click: () => playTone(800, 50),
+  select: () => playTone(600, 100),
+  tick: () => playTone(400, 30),
+  win: () => playWinSound(),
+  loss: () => playTone(200, 200),
+  takeLead: () => playTone(1000, 150),
+  countdown: () => playTone(300, 100)
+};
+
+function playTone(frequency, duration) {
+  if (!gameState.soundEnabled) return;
+  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  const oscillator = audioCtx.createOscillator();
+  const gainNode = audioCtx.createGain();
+  
+  oscillator.connect(gainNode);
+  gainNode.connect(audioCtx.destination);
+  
+  oscillator.frequency.value = frequency;
+  oscillator.type = 'sine';
+  
+  gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+  gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration / 1000);
+  
+  oscillator.start(audioCtx.currentTime);
+  oscillator.stop(audioCtx.currentTime + duration / 1000);
+}
+
+function playWinSound() {
+  if (!gameState.soundEnabled) return;
+  playTone(800, 100);
+  setTimeout(() => playTone(1000, 100), 100);
+  setTimeout(() => playTone(1200, 150), 200);
+}
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
@@ -67,6 +106,7 @@ function setupModeSelection() {
 
   freeBtn.addEventListener('click', () => {
     console.log('Free mode clicked');
+    sounds.click();
     gameState.mode = 'free';
     freeBtn.classList.add('active');
     solBtn.classList.remove('active');
@@ -158,6 +198,7 @@ function renderCoinGrid() {
 async function selectCoin(coin) {
   if (gameState.isLocked) return;
   
+  sounds.select();
   gameState.selectedCoin = coin;
   gameState.isLocked = true;
   
@@ -217,6 +258,7 @@ function startGame() {
 // Countdown Timer
 function startCountdown() {
   const timerElement = document.getElementById('countdown-timer');
+  let lastSecond = null;
   
   const updateTimer = () => {
     const remaining = gameState.endTime - Date.now();
@@ -230,8 +272,10 @@ function startCountdown() {
     const seconds = Math.floor((remaining % 60000) / 1000);
     timerElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
     
-    // Pulse effect in final 10 seconds
-    if (remaining < 10000) {
+    // Play countdown sound in final 10 seconds
+    if (remaining < 10000 && seconds !== lastSecond) {
+      sounds.countdown();
+      lastSecond = seconds;
       timerElement.classList.add('pulse');
     }
     
@@ -239,6 +283,48 @@ function startCountdown() {
   };
   
   updateTimer();
+}
+
+// Confetti Animation
+function triggerConfetti() {
+  const colors = ['#14F195', '#9945FF', '#FFD700', '#FF007A'];
+  const confettiCount = 50;
+  
+  for (let i = 0; i < confettiCount; i++) {
+    setTimeout(() => {
+      const confetti = document.createElement('div');
+      confetti.style.position = 'fixed';
+      confetti.style.left = Math.random() * 100 + 'vw';
+      confetti.style.top = '-10px';
+      confetti.style.width = '10px';
+      confetti.style.height = '10px';
+      confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+      confetti.style.opacity = '0.8';
+      confetti.style.borderRadius = '50%';
+      confetti.style.pointerEvents = 'none';
+      confetti.style.zIndex = '1000';
+      confetti.style.animation = `fall ${2 + Math.random()}s linear`;
+      
+      document.body.appendChild(confetti);
+      
+      setTimeout(() => confetti.remove(), 3000);
+    }, i * 30);
+  }
+}
+
+// Add CSS animation for confetti
+if (!document.getElementById('confetti-style')) {
+  const style = document.createElement('style');
+  style.id = 'confetti-style';
+  style.textContent = `
+    @keyframes fall {
+      to {
+        transform: translateY(100vh) rotate(360deg);
+        opacity: 0;
+      }
+    }
+  `;
+  document.head.appendChild(style);
 }
 
 // Race Display (Live horizontal bars)
@@ -290,6 +376,13 @@ async function updatePrices() {
     // Sort by change (descending)
     changes.sort((a, b) => b.change - a.change);
     
+    // Check if user's coin moved up in ranking
+    const userRank = changes.findIndex(c => c.coin.id === gameState.selectedCoin.id) + 1;
+    if (gameState.lastRank && userRank < gameState.lastRank && userRank <= 3) {
+      sounds.takeLead();
+    }
+    gameState.lastRank = userRank;
+    
     // Update race display
     changes.forEach((item, index) => {
       const row = document.querySelector(`.race-row[data-coin-id="${item.coin.id}"]`);
@@ -310,6 +403,8 @@ async function updatePrices() {
       // Reorder rows by rank
       row.style.order = rank;
     });
+    
+    sounds.tick();
     
   } catch (err) {
     console.error('Failed to update prices:', err);
@@ -355,6 +450,8 @@ function showResults(rankings, userRank, didWin) {
   const rankingsList = document.getElementById('rankings-list');
   
   if (didWin) {
+    sounds.win();
+    triggerConfetti();
     resultText.innerHTML = `<span style="color: #14F195;">🎉 YOU FINISHED #${userRank}!</span>`;
     
     if (gameState.mode === 'sol') {
@@ -363,6 +460,9 @@ function showResults(rankings, userRank, didWin) {
       resultText.innerHTML += `<br><span style="font-size: 1.2rem;">You won ${split * 100}% of the pool! 💰</span>`;
     }
   } else {
+    sounds.loss();
+    document.body.classList.add('screen-shake');
+    setTimeout(() => document.body.classList.remove('screen-shake'), 500);
     resultText.innerHTML = `<span style="color: #ff4444;">You finished #${userRank}</span>`;
   }
   
