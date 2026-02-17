@@ -258,6 +258,8 @@ function startGame() {
 // Countdown Timer
 function startCountdown() {
   const timerElement = document.getElementById('countdown-timer');
+  const horseElement = document.getElementById('racing-horse');
+  const totalDuration = gameState.endTime - gameState.startTime;
   let lastSecond = null;
   
   const updateTimer = () => {
@@ -272,11 +274,18 @@ function startCountdown() {
     const seconds = Math.floor((remaining % 60000) / 1000);
     timerElement.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
     
+    // Update horse position (0% to 90% of track)
+    const progress = ((totalDuration - remaining) / totalDuration) * 90;
+    horseElement.style.left = `${progress}%`;
+    
     // Play countdown sound in final 10 seconds
-    if (remaining < 10000 && seconds !== lastSecond) {
-      sounds.countdown();
-      lastSecond = seconds;
-      timerElement.classList.add('pulse');
+    if (remaining < 10000) {
+      horseElement.classList.add('sprint');
+      if (seconds !== lastSecond) {
+        sounds.countdown();
+        lastSecond = seconds;
+        timerElement.classList.add('pulse');
+      }
     }
     
     requestAnimationFrame(updateTimer);
