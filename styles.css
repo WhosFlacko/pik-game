@@ -1060,18 +1060,24 @@ header {
 .coin-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 1rem;
-    padding: 1rem 1.5rem;
+    gap: 1.5rem;
+    padding: 2rem 1.5rem;
+    max-width: 500px;
+    margin: 0 auto;
 }
 
 .coin-card {
-    padding: 1.5rem 1rem;
+    padding: 2rem 1.5rem;
     background: var(--card-bg);
     border: 2px solid rgba(255, 255, 255, 0.1);
-    border-radius: 16px;
+    border-radius: 20px;
     cursor: pointer;
     transition: all 0.3s ease;
     text-align: center;
+    min-height: 120px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 .coin-card:hover {
@@ -1093,14 +1099,16 @@ header {
 }
 
 .coin-symbol {
-    font-size: 1.8rem;
+    font-size: 2.5rem;
     font-weight: 800;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.8rem;
+    letter-spacing: 1px;
 }
 
 .coin-name {
-    font-size: 0.85rem;
+    font-size: 1rem;
     color: var(--text-secondary);
+    font-weight: 600;
 }
 
 /* 8-bit Horse Racing Track */

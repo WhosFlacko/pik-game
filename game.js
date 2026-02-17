@@ -2,18 +2,12 @@
 // For Solana degens - max dopamine, real-time race visualization
 
 const CONFIG = {
-  UPDATE_INTERVAL: 5000, // 5 seconds between price updates
+  UPDATE_INTERVAL: 1000, // 1 second - REAL-TIME updates
   COINS: [
     { id: 'bitcoin', symbol: 'BTC', name: 'Bitcoin', color: '#F7931A' },
     { id: 'ethereum', symbol: 'ETH', name: 'Ethereum', color: '#627EEA' },
     { id: 'solana', symbol: 'SOL', name: 'Solana', color: '#14F195' },
-    { id: 'cardano', symbol: 'ADA', name: 'Cardano', color: '#0033AD' },
-    { id: 'dogecoin', symbol: 'DOGE', name: 'Dogecoin', color: '#C2A633' },
-    { id: 'polkadot', symbol: 'DOT', name: 'Polkadot', color: '#E6007A' },
-    { id: 'avalanche-2', symbol: 'AVAX', name: 'Avalanche', color: '#E84142' },
-    { id: 'chainlink', symbol: 'LINK', name: 'Chainlink', color: '#2A5ADA' },
-    { id: 'uniswap', symbol: 'UNI', name: 'Uniswap', color: '#FF007A' },
-    { id: 'litecoin', symbol: 'LTC', name: 'Litecoin', color: '#345D9D' }
+    { id: 'dogecoin', symbol: 'DOGE', name: 'Dogecoin', color: '#C2A633' }
   ],
   BUY_INS: {
     1: 0.05,
