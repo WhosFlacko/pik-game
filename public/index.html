@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CoinPick - Crypto Prediction Game</title>
+    <meta name="description" content="Pick the crypto with the biggest % gain. Quick rounds, instant results.">
+    <meta name="theme-color" content="#14F195">
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Game Container -->
+    <div id="app">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">⚡ CoinPick</div>
+            <div class="stats">
+                <span class="streak">🔥 <span id="streak">0</span></span>
+                <span class="wins">✅ <span id="wins">0</span></span>
+            </div>
+        </header>
+
+        <!-- Main Game Area -->
+        <main class="game">
+            <!-- Mode Selection -->
+            <div id="modeSelect" class="mode-select">
+                <h2>Pick Your Timeframe</h2>
+                <div class="mode-buttons">
+                    <button class="mode-btn" data-minutes="1">⚡ 1 Min</button>
+                    <button class="mode-btn" data-minutes="5">🔥 5 Min</button>
+                    <button class="mode-btn active" data-minutes="15">💎 15 Min</button>
+                    <button class="mode-btn" data-minutes="30">🚀 30 Min</button>
+                </div>
+                <button id="startGame" class="start-btn">Start Game</button>
+            </div>
+
+            <!-- Active Game -->
+            <div id="gameActive" class="game-active hidden">
+                <!-- Timer -->
+                <div class="timer-container">
+                    <div class="timer-label">Time Remaining</div>
+                    <div class="timer" id="timer">15:00</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                </div>
+
+                <!-- Instruction -->
+                <div class="instruction">
+                    Pick the coin with the <strong>biggest % gain</strong>
+                </div>
+
+                <!-- Coin Grid -->
+                <div class="coin-grid" id="coinGrid">
+                    <!-- Coins will be inserted here -->
+                </div>
+
+                <!-- Cancel Button -->
+                <button id="cancelGame" class="cancel-btn">Cancel Game</button>
+            </div>
+
+            <!-- Results Screen -->
+            <div id="results" class="results hidden">
+                <div class="result-icon" id="resultIcon">🎉</div>
+                <div class="result-text" id="resultText">You Won!</div>
+                <div class="result-details">
+                    <div class="winning-coin" id="winningCoin"></div>
+                    <div class="price-changes" id="priceChanges"></div>
+                </div>
+                <button id="playAgain" class="play-again-btn">Play Again</button>
+                <button id="viewLeaderboard" class="secondary-btn">Leaderboard</button>
+            </div>
+
+            <!-- Leaderboard -->
+            <div id="leaderboard" class="leaderboard hidden">
+                <h2>🏆 Leaderboard</h2>
+                <div class="leaderboard-list" id="leaderboardList">
+                    <!-- Leaderboard entries -->
+                </div>
+                <button id="backToGame" class="secondary-btn">Back to Game</button>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>Free to play • Track your streak • Compete on the leaderboard</p>
+        </footer>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>

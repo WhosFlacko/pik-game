@@ -1,0 +1,447 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --solana-green: #14F195;
+    --solana-purple: #9945FF;
+    --dark-bg: #0a0a0a;
+    --card-bg: #1a1a1a;
+    --text-primary: #ffffff;
+    --text-secondary: #a0a0a0;
+    --success: #00ff88;
+    --error: #ff4444;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 100%);
+    color: var(--text-primary);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+}
+
+#app {
+    max-width: 480px;
+    margin: 0 auto;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Header */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem 1.5rem 1rem;
+}
+
+.logo {
+    font-size: 1.5rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--solana-green), var(--solana-purple));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.stats {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.95rem;
+}
+
+.stats span {
+    background: var(--card-bg);
+    padding: 0.4rem 0.8rem;
+    border-radius: 20px;
+    font-weight: 600;
+}
+
+/* Main Game */
+.game {
+    flex: 1;
+    padding: 1rem 1.5rem 2rem;
+}
+
+/* Mode Select */
+.mode-select {
+    text-align: center;
+    padding: 2rem 0;
+}
+
+.mode-select h2 {
+    font-size: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.mode-buttons {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.mode-btn {
+    background: var(--card-bg);
+    border: 2px solid transparent;
+    color: var(--text-primary);
+    padding: 1.2rem;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.mode-btn:hover {
+    transform: translateY(-2px);
+    border-color: var(--solana-green);
+}
+
+.mode-btn.active {
+    background: linear-gradient(135deg, var(--solana-green), var(--solana-purple));
+    border-color: transparent;
+}
+
+.start-btn {
+    background: linear-gradient(135deg, var(--solana-green), var(--solana-purple));
+    border: none;
+    color: #000;
+    font-weight: 700;
+    font-size: 1.2rem;
+    padding: 1rem 3rem;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 8px 24px rgba(20, 241, 149, 0.3);
+}
+
+.start-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px rgba(20, 241, 149, 0.4);
+}
+
+/* Active Game */
+.game-active {
+    animation: fadeIn 0.3s;
+}
+
+.timer-container {
+    background: var(--card-bg);
+    padding: 1.5rem;
+    border-radius: 16px;
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+.timer-label {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.timer {
+    font-size: 3rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    background: linear-gradient(135deg, var(--solana-green), var(--solana-purple));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 6px;
+    background: #333;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-top: 1rem;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--solana-green), var(--solana-purple));
+    transition: width 0.3s linear;
+}
+
+.instruction {
+    text-align: center;
+    font-size: 1.1rem;
+    margin-bottom: 1.5rem;
+    color: var(--text-secondary);
+}
+
+.instruction strong {
+    color: var(--solana-green);
+}
+
+/* Coin Grid */
+.coin-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.coin-card {
+    background: var(--card-bg);
+    border: 2px solid transparent;
+    border-radius: 16px;
+    padding: 1.5rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+}
+
+.coin-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--solana-green);
+}
+
+.coin-card.selected {
+    background: linear-gradient(135deg, rgba(20, 241, 149, 0.1), rgba(153, 69, 255, 0.1));
+    border-color: var(--solana-green);
+    box-shadow: 0 8px 24px rgba(20, 241, 149, 0.2);
+}
+
+.coin-card.correct {
+    background: linear-gradient(135deg, rgba(0, 255, 136, 0.2), rgba(0, 255, 136, 0.1));
+    border-color: var(--success);
+}
+
+.coin-card.wrong {
+    background: rgba(255, 68, 68, 0.1);
+    border-color: var(--error);
+    opacity: 0.6;
+}
+
+.coin-symbol {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.coin-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.coin-price {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.3rem;
+}
+
+.coin-change {
+    font-size: 1.2rem;
+    font-weight: 700;
+}
+
+.coin-change.positive {
+    color: var(--success);
+}
+
+.coin-change.negative {
+    color: var(--error);
+}
+
+.cancel-btn {
+    width: 100%;
+    background: transparent;
+    border: 2px solid #333;
+    color: var(--text-secondary);
+    padding: 0.8rem;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: all 0.2s;
+}
+
+.cancel-btn:hover {
+    border-color: var(--error);
+    color: var(--error);
+}
+
+/* Results */
+.results {
+    text-align: center;
+    padding: 2rem 0;
+    animation: fadeIn 0.3s;
+}
+
+.result-icon {
+    font-size: 5rem;
+    margin-bottom: 1rem;
+    animation: bounceIn 0.6s;
+}
+
+.result-text {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+}
+
+.result-details {
+    background: var(--card-bg);
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.winning-coin {
+    font-size: 1.2rem;
+    margin-bottom: 1rem;
+}
+
+.price-changes {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.price-change-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+}
+
+.play-again-btn {
+    background: linear-gradient(135deg, var(--solana-green), var(--solana-purple));
+    border: none;
+    color: #000;
+    font-weight: 700;
+    font-size: 1.1rem;
+    padding: 1rem 2.5rem;
+    border-radius: 50px;
+    cursor: pointer;
+    margin-bottom: 1rem;
+    width: 100%;
+    transition: all 0.2s;
+}
+
+.play-again-btn:hover {
+    transform: translateY(-2px);
+}
+
+.secondary-btn {
+    background: transparent;
+    border: 2px solid var(--solana-green);
+    color: var(--solana-green);
+    font-weight: 600;
+    padding: 0.8rem 2rem;
+    border-radius: 50px;
+    cursor: pointer;
+    width: 100%;
+    transition: all 0.2s;
+}
+
+.secondary-btn:hover {
+    background: rgba(20, 241, 149, 0.1);
+}
+
+/* Leaderboard */
+.leaderboard {
+    animation: fadeIn 0.3s;
+}
+
+.leaderboard h2 {
+    text-align: center;
+    font-size: 1.8rem;
+    margin-bottom: 1.5rem;
+}
+
+.leaderboard-list {
+    background: var(--card-bg);
+    border-radius: 16px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.leaderboard-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: 1px solid #333;
+}
+
+.leaderboard-item:last-child {
+    border-bottom: none;
+}
+
+.leaderboard-rank {
+    font-size: 1.2rem;
+    font-weight: 700;
+    width: 40px;
+}
+
+.leaderboard-name {
+    flex: 1;
+}
+
+.leaderboard-score {
+    font-weight: 700;
+    color: var(--solana-green);
+}
+
+/* Footer */
+.footer {
+    padding: 1rem;
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+}
+
+/* Utilities */
+.hidden {
+    display: none !important;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes bounceIn {
+    0% {
+        transform: scale(0);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* Mobile Optimizations */
+@media (max-width: 375px) {
+    .timer {
+        font-size: 2.5rem;
+    }
+    
+    .coin-grid {
+        gap: 0.75rem;
+    }
+    
+    .coin-card {
+        padding: 1rem;
+    }
+}
